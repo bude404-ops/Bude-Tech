@@ -1,4 +1,5 @@
-name: Bude CEO
+- name: Run CEO Brain
+  run: node ./ceo/brain.js
 
 on:
   workflow_dispatch:
