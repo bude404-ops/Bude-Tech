@@ -1,0 +1,61 @@
+name: 🤖 Bude Tech Autonomous CEO
+
+on:
+  schedule:
+    # FAST MODE: Every 30 minutes while bootstrapping
+    # Will auto-switch to every 6 hours once established
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'CEO Mode'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - bootstrap
+          - build
+          - fix
+          - learn
+
+env:
+  OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  ceo-brain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      issues: write
+      
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup Git Identity
+        run: |
+          git config user.name "Bude CEO 🤖"
+          git config user.email "ceo@bude-tech.ai"
+      
+      - name: 🧠 CEO Brain
+        run: node ceo/brain.js
+        env:
+          CEO_MODE: ${{ github.event.inputs.mode || 'auto' }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+      
+      - name: 📝 Commit & Push
+        run: |
+          git add -A
+          git diff --cached --quiet || git commit -m "🤖 CEO #${{ github.run_number }} | $(cat ceo/last_action.txt 2>/dev/null || echo 'cycle')"
+          git push
