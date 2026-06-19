@@ -1,2 +1,2 @@
-// AUTO GENERATED FILE
-console.log("ACTIVE:", "backend/api.js");
+// AUTO GENERATED
+console.log("ACTIVE backend/api.js");
