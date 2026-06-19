@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+require("dotenv").config();
 /**
  * BUDE TECH CEO v8 — AI SWARM FACTORY
  * Realistic autonomous coding system (LLM-powered if available)
