@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUDE CEO v14.4</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 20px; line-height: 1.6; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; background: linear-gradient(90deg, #4caf50, #81c784); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; max-width: 900px; margin: 0 auto; }
+    .card { background: #151515; border: 1px solid #222; border-radius: 12px; padding: 1.2rem; }
+    .card h3 { color: #4caf50; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+    .stat { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #1a1a1a; }
+    .stat:last-child { border-bottom: none; }
+    .stat .label { color: #888; }
+    .stat .value { color: #fff; font-weight: 600; }
+    .value.done { color: #4caf50; }
+    .value.fail { color: #f44336; }
+    .value.running { color: #ff9800; }
+    .log { font-size: 0.8rem; color: #888; padding: 0.3rem 0; border-bottom: 1px solid #1a1a1a; }
+    .log:last-child { border-bottom: none; }
+    .log .time { color: #555; margin-right: 0.5rem; }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge.done { background: #1b3a1b; color: #4caf50; }
+    .badge.fail { background: #3a1b1b; color: #f44336; }
+    .footer { text-align: center; color: #444; font-size: 0.8rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #1a1a1a; }
+    @media (max-width: 600px) { body { padding: 12px; } h1 { font-size: 1.4rem; } }
+  </style>
+</head>
+<body>
+  <h1>🧠 BUDE CEO v14.4</h1>
+  <p class="subtitle">Governed Agent Civilization • Cycle 3 / 15 • Updated 6/19/2026, 8:14:44 PM</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>System Status</h3>
+      <div class="stat"><span class="label">Phase</span><span class="value running">init</span></div>
+      <div class="stat"><span class="label">Successes</span><span class="value done">3 / 3</span></div>
+      <div class="stat"><span class="label">Failures</span><span class="value fail">0</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Agent Reputation</h3>
+      <div class="stat"><span class="label">Alpha</span><span class="value">1.000</span></div>
+      <div class="stat"><span class="label">Beta</span><span class="value">1.000</span></div>
+      <div class="stat"><span class="label">Gamma</span><span class="value">1.030</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Build History</h3>
+      <div class="log"><span class="time">C1</span>gamma → system stability hardening <span class="badge done">OK</span></div><div class="log"><span class="time">C2</span>gamma → system stability hardening <span class="badge done">OK</span></div><div class="log"><span class="time">C3</span>gamma → system stability hardening <span class="badge done">OK</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Memory</h3>
+      <div class="stat"><span class="label">Successes</span><span class="value">{"system stability hardening":3}</span></div>
+      <div class="stat"><span class="label">Failures</span><span class="value">{}</span></div>
+    </div>
+  </div>
+
+  <p class="footer">Built autonomously by BUDE CEO • <a href="https://github.com/bude404-ops/Bude-Tech" style="color:#4caf50">View Source</a></p>
+</body>
+</html>
