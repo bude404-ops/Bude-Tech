@@ -1,2 +1,2 @@
-// AUTO GENERATED FILE
-console.log("ACTIVE:", "frontend/app.js");
+// AUTO GENERATED
+console.log("ACTIVE frontend/app.js");
