@@ -203,7 +203,6 @@ async function loop() {
   while (true) {
     STATE.lastRun = new Date().toISOString();
 
-    // FIX: Only add work when idle (no pending tasks)
     const pendingCount = STATE.tasks.filter(t => t.status === "pending").length;
 
     if (pendingCount === 0) {
@@ -221,6 +220,7 @@ async function loop() {
     await new Promise(r => setTimeout(r, 8000));
   }
 }
+
 
 /**
  * =========================
