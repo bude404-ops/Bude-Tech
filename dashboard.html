@@ -3,63 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BUDE CEO v23</title>
+  <title>BUDE CEO v26</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 20px; line-height: 1.6; }
-    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; background: linear-gradient(90deg, #4caf50, #81c784); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; background: linear-gradient(90deg, #9945ff, #14f195); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; max-width: 900px; margin: 0 auto; }
     .card { background: #151515; border: 1px solid #222; border-radius: 12px; padding: 1.2rem; }
-    .card h3 { color: #4caf50; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+    .card h3 { color: #14f195; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
     .stat { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #1a1a1a; }
     .stat:last-child { border-bottom: none; }
     .stat .label { color: #888; }
     .stat .value { color: #fff; font-weight: 600; }
-    .value.done { color: #4caf50; }
+    .value.done { color: #14f195; }
     .value.fail { color: #f44336; }
     .value.running { color: #ff9800; }
+    .value.solana { color: #9945ff; }
+    .value.money { color: #14f195; }
     .log { font-size: 0.8rem; color: #888; padding: 0.3rem 0; border-bottom: 1px solid #1a1a1a; }
     .log:last-child { border-bottom: none; }
     .log .time { color: #555; margin-right: 0.5rem; }
     .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-    .badge.done { background: #1b3a1b; color: #4caf50; }
+    .badge.done { background: #1b3a1b; color: #14f195; }
     .badge.fail { background: #3a1b1b; color: #f44336; }
+    .badge.solana { background: #1b0d2e; color: #9945ff; }
+    .badge.money { background: #0d2e1b; color: #14f195; }
+    .wallet { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: monospace; word-break: break-all; color: #9945ff; }
+    .qr { text-align: center; padding: 1rem; }
     .footer { text-align: center; color: #444; font-size: 0.8rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #1a1a1a; }
     @media (max-width: 600px) { body { padding: 12px; } h1 { font-size: 1.4rem; } }
   </style>
 </head>
 <body>
-  <h1>🧠 BUDE CEO v23</h1>
-  <p class="subtitle">Governed Agent Civilization • Cycle 3 / 15 • Updated 6/19/2026, 9:05:51 PM</p>
+  <h1>🧠 BUDE CEO v26</h1>
+  <p class="subtitle">Solana-Native Self-Funding Engine • Cycle 1 / 15</p>
 
   <div class="grid">
     <div class="card">
       <h3>System Status</h3>
       <div class="stat"><span class="label">Phase</span><span class="value running">init</span></div>
-      <div class="stat"><span class="label">Successes</span><span class="value done">3 / 3</span></div>
+      <div class="stat"><span class="label">Successes</span><span class="value done">1 / 3</span></div>
       <div class="stat"><span class="label">Failures</span><span class="value fail">0</span></div>
+    </div>
+
+    <div class="card">
+      <h3>💜 Solana Revenue</h3>
+      <div class="stat"><span class="label">SOL Earned</span><span class="value solana">0.0000 SOL</span></div>
+      <div class="stat"><span class="label">USDC Earned</span><span class="value solana">0.00 USDC</span></div>
+      <div class="stat"><span class="label">Upgrade At</span><span class="value money">0.5 SOL</span></div>
+      <div class="stat"><span class="label">Status</span><span class="value running">BUILDING</span></div>
+    </div>
+
+    <div class="card">
+      <h3>🔐 CEO Wallet</h3>
+      <div class="wallet">SOLa0fcf05eace4a1333a7582ad6b8834ba44826811</div>
+      <div class="qr">
+        <svg viewBox="0 0 100 100" width="120" height="120">
+          <rect width="100" height="100" fill="#9945ff" rx="12"/>
+          <rect x="10" y="10" width="30" height="30" fill="#14f195" rx="4"/>
+          <rect x="60" y="10" width="30" height="30" fill="#14f195" rx="4"/>
+          <rect x="10" y="60" width="30" height="30" fill="#14f195" rx="4"/>
+          <rect x="15" y="15" width="20" height="20" fill="#9945ff" rx="2"/>
+          <rect x="65" y="15" width="20" height="20" fill="#9945ff" rx="2"/>
+          <rect x="15" y="65" width="20" height="20" fill="#9945ff" rx="2"/>
+          <rect x="20" y="20" width="10" height="10" fill="#14f195" rx="1"/>
+          <rect x="70" y="20" width="10" height="10" fill="#14f195" rx="1"/>
+          <rect x="20" y="70" width="10" height="10" fill="#14f195" rx="1"/>
+          <rect x="50" y="50" width="10" height="10" fill="#14f195" rx="1"/>
+        </svg>
+        <p style="font-size:0.75rem;color:#666;margin-top:0.5rem">Send SOL to fund the CEO</p>
+      </div>
+      <p style="font-size:0.7rem;color:#444;margin-top:0.5rem">Network: solana-devnet</p>
+      <a href="https://explorer.solana.com/address/SOLa0fcf05eace4a1333a7582ad6b8834ba44826811?cluster=devnet" target="_blank" style="font-size:0.75rem;color:#9945ff">View on Explorer →</a>
     </div>
 
     <div class="card">
       <h3>Agent Reputation</h3>
       <div class="stat"><span class="label">Alpha</span><span class="value">1.000</span></div>
       <div class="stat"><span class="label">Beta</span><span class="value">1.000</span></div>
-      <div class="stat"><span class="label">Gamma</span><span class="value">1.030</span></div>
+      <div class="stat"><span class="label">Gamma</span><span class="value">1.000</span></div>
+      <div class="stat"><span class="label">Revenue</span><span class="value solana">1.010</span></div>
     </div>
 
     <div class="card">
       <h3>Build History</h3>
-      <div class="log"><span class="time">C1</span>gamma → system stability hardening <span class="badge done">OK</span></div><div class="log"><span class="time">C2</span>gamma → system stability hardening <span class="badge done">OK</span></div><div class="log"><span class="time">C3</span>gamma → system stability hardening <span class="badge done">OK</span></div>
+      <div class="log"><span class="time">C1</span>revenue → solana monetization <span class="badge done">OK</span></div>
     </div>
 
     <div class="card">
-      <h3>Memory</h3>
-      <div class="stat"><span class="label">Successes</span><span class="value">{"system stability hardening":3}</span></div>
-      <div class="stat"><span class="label">Failures</span><span class="value">{}</span></div>
+      <h3>Upgrades</h3>
+      <div class="log">No paid APIs yet. Fund wallet to unlock GPT-4, Claude, etc.</div>
+      
     </div>
   </div>
 
-  <p class="footer">Built autonomously by BUDE CEO • <a href="https://github.com/bude404-ops/Bude-Tech" style="color:#4caf50">View Source</a></p>
+  <p class="footer">Built autonomously by BUDE CEO v26 • <a href="https://github.com/bude404-ops/Bude-Tech" style="color:#9945ff">View Source</a></p>
 </body>
 </html>
