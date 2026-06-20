@@ -1,9 +1,8 @@
-name: BUDE AI Dev Swarm v28
+name: BUDE Stable Agent v27.1
 
 on:
   issues:
     types: [opened]
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,11 +10,11 @@ permissions:
   issues: read
 
 jobs:
-  swarm:
+  agent:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -23,20 +22,36 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install
+      - name: Install deps
         run: npm install || true
+
+      - name: Show event payload (DEBUG)
+        run: cat $GITHUB_EVENT_PATH
 
       - name: Extract Task
         run: |
           echo "TASK=$(jq -r .issue.title $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
 
-      - name: Run Swarm Engine
-        run: node engine/swarm.js "$TASK"
+      - name: Verify engine exists
+        run: ls -R engine || echo "engine missing"
 
-      - name: Create PR
+      - name: Run Agent (verbose mode)
+        run: node engine/agent.js "$TASK"
+
+      - name: Upload logs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-logs
+          path: agent-log.json
+
+      - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "🧠 BUDE AI Dev Swarm v28"
-          body: "Multi-agent planning, critique, and repair loop system"
-          branch: "swarm-${{ github.run_id }}"
+          title: "🧠 BUDE Stable Agent v27.1 Output"
+          body: |
+            Automated agent execution completed.
+
+            📊 Logs attached in artifact
+            🧠 Check agent-log.json for reasoning trace
+          branch: "stable-agent-${{ github.run_id }}"
           base: main
