@@ -1,20 +1,21 @@
-name: BUDE Stable Agent v27.1
+name: BUDE CTO Product Builder v31
 
 on:
   issues:
     types: [opened]
+  workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
-  issues: read
+  issues: write
 
 jobs:
-  agent:
+  cto:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -23,35 +24,17 @@ jobs:
           node-version: 20
 
       - name: Install deps
-        run: npm install || true
+        run: npm install openai || true
 
-      - name: Show event payload (DEBUG)
-        run: cat $GITHUB_EVENT_PATH
+      - name: Run CTO Brain
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node engine/cto.js "$GITHUB_EVENT_PATH"
 
-      - name: Extract Task
-        run: |
-          echo "TASK=$(jq -r .issue.title $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-
-      - name: Verify engine exists
-        run: ls -R engine || echo "engine missing"
-
-      - name: Run Agent (verbose mode)
-        run: node engine/agent.js "$TASK"
-
-      - name: Upload logs artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: agent-logs
-          path: agent-log.json
-
-      - name: Create Pull Request
+      - name: Create PR
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "🧠 BUDE Stable Agent v27.1 Output"
-          body: |
-            Automated agent execution completed.
-
-            📊 Logs attached in artifact
-            🧠 Check agent-log.json for reasoning trace
-          branch: "stable-agent-${{ github.run_id }}"
+          title: "🧠 BUDE CTO Product Build Cycle v31"
+          body: "CTO-generated roadmap + execution cycle"
+          branch: "cto-${{ github.run_id }}"
           base: main
