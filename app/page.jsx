@@ -1,4 +1,4 @@
 
 export default function Page(){
-  return <div>Built: null</div>;
+  return <div>Built: Reate dashboard</div>;
 }
