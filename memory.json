@@ -1,9 +1,26 @@
 {
-  "cycles": [],
+  "cycles": [
+    {
+      "app": "app_1",
+      "score": 80
+    },
+    {
+      "app": "app_2",
+      "score": 55
+    },
+    {
+      "app": "app_3",
+      "score": 90
+    }
+  ],
   "best_patterns": [
     "simple_dashboard",
-    "basic_saas_app"
+    "basic_saas_app",
+    "app_1",
+    "app_3"
   ],
-  "failed_patterns": [],
-  "last_score_avg": 0
+  "failed_patterns": [
+    "app_2"
+  ],
+  "last_score_avg": 75
 }
