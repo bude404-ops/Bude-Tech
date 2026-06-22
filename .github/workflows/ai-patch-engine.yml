@@ -1,0 +1,50 @@
+name: AI Patch Executor
+
+on:
+  repository_dispatch:
+    types: [ai-patch]
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply AI Patch
+        run: |
+          echo "AI patch received"
+
+          echo '${{ toJson(github.event.client_payload) }}' > patch.json
+
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('patch.json','utf8'));
+
+            let file = fs.readFileSync(p.file,'utf8');
+
+            if(p.action === 'replace_file') {
+              fs.writeFileSync(p.file, p.code);
+            }
+
+            if(p.action === 'append') {
+              fs.appendFileSync(p.file, p.code);
+            }
+
+            if(p.action === 'replace_function') {
+              const regex = new RegExp(
+                'function ' + p.target + '[\\s\\S]*?\\n}',
+                'g'
+              );
+              file = file.replace(regex, p.code);
+              fs.writeFileSync(p.file, file);
+            }
+          "
+
+      - name: Commit Changes
+        run: |
+          git config user.name "bude-ai"
+          git config user.email "ai@bude.tech"
+          git add .
+          git commit -m "AI patch applied" || exit 0
+          git push
