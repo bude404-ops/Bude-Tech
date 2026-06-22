@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BudE Tech Core</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="font-family: Arial; background:#0b1220; color:white; text-align:center; padding:20px;">
+
+  <h1>🧠 BudE Tech Core</h1>
+  <p>Autonomous Society of Minds (Free Tier System)</p>
+
+  <button onclick="runBrain()" style="padding:12px 20px; font-size:16px;">
+    Run Executive Brain
+  </button>
+
+  <pre id="output" style="text-align:left; margin-top:20px; background:#111827; padding:15px; border-radius:8px;"></pre>
+
+<script>
+const agents = [
+  { name: "ECHO", role: "Executive Core", msg: "Aligning system strategy" },
+  { name: "LEDGER", role: "Finance", msg: "Ensuring zero-cost operation" },
+  { name: "FORGE", role: "Engineering", msg: "Building with free-tier tools" },
+  { name: "COMPASS", role: "Product", msg: "Defining MVP direction" },
+  { name: "BEACON", role: "Marketing", msg: "Organic growth only strategy" },
+  { name: "BRIDGE", role: "Sales", msg: "Manual outreach systems" },
+  { name: "HARBOR", role: "Support", msg: "GitHub-based support flow" },
+  { name: "PULSE", role: "Operations", msg: "Workflow optimization active" },
+  { name: "ORACLE", role: "Research", msg: "Scanning opportunities" },
+  { name: "SENTINEL", role: "Governance", msg: "Safety + compliance checks" }
+];
+
+function runBrain() {
+  let output = "=== BUD E TECH EXECUTIVE RUN ===\n\n";
+
+  agents.forEach(a => {
+    output += `${a.name} (${a.role})\n`;
+    output += `→ ${a.msg}\n`;
+    output += `→ Status: ACTIVE\n\n`;
+  });
+
+  output += "=== SYSTEM SUMMARY ===\n";
+  output += "Mode: Free-tier autonomous simulation\n";
+  output += "Memory: Stateless (upgrade later)\n";
+  output += "Next Step: Connect workflow engine via GitHub Actions\n";
+
+  document.getElementById("output").innerText = output;
+}
+</script>
+
+</body>
+</html>
