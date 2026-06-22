@@ -1,0 +1,36 @@
+name: BudE Tech Brain Loop
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"  # runs every hour
+
+jobs:
+  run-brain:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Simulate Brain Activity
+        run: |
+          echo "BUD E TECH AUTONOMOUS CYCLE"
+          echo "ECHO: reviewing system health"
+          echo "LEDGER: enforcing free-tier constraint"
+          echo "FORGE: validating architecture"
+          echo "ORACLE: scanning opportunities"
+          echo "SENTINEL: compliance check passed"
+
+      - name: Update Log
+        run: |
+          mkdir -p logs
+          echo "Run completed at $(date)" >> logs/brain-log.txt
+
+      - name: Commit Updates
+        run: |
+          git config --global user.name "bude-brain"
+          git config --global user.email "brain@bude.tech"
+          git add .
+          git commit -m "brain cycle update" || exit 0
+          git push
