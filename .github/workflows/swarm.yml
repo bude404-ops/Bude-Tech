@@ -5,12 +5,18 @@ on:
     - cron: "0 * * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   integrate:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       # =========================
       # 🧠 LOAD SYSTEM CORE STATE
@@ -19,13 +25,35 @@ jobs:
         run: |
           if [ ! -f memory.json ]; then
             echo '{
-              "apps":["farm_dashboard","inventory_system","crm_tool"],
-              "integrations":[],
-              "api_links":[],
-              "auth_enabled":false,
-              "data_sources":[]
+              "apps": ["farm_dashboard", "inventory_system", "crm_tool"],
+              "integrations": [],
+              "api_links": [],
+              "auth_enabled": false,
+              "data_sources": []
             }' > memory.json
           fi
+
+      # =========================
+      # 📦 SETUP NODE & EXPRESS
+      # =========================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: |
+          if [ ! -f package.json ]; then
+            echo '{
+              "name": "bude-integration-layer",
+              "version": "21.0.0",
+              "private": true,
+              "dependencies": {
+                "express": "^4.18.2"
+              }
+            }' > package.json
+          fi
+          npm install
 
       # =========================
       # 🔌 BUILD INTEGRATION MAP
@@ -34,21 +62,17 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-
-            let memory = JSON.parse(fs.readFileSync('memory.json','utf8'));
-
+            let memory = JSON.parse(fs.readFileSync('memory.json', 'utf8'));
             let integration_map = {};
-
             memory.apps.forEach(app => {
               integration_map[app] = {
                 api: '/api/' + app,
                 db: app + '_db',
                 auth: 'enabled',
-                external: ['rest','json','webhook']
+                external: ['rest', 'json', 'webhook']
               };
             });
-
-            fs.writeFileSync('integration_map.json', JSON.stringify(integration_map,null,2));
+            fs.writeFileSync('integration_map.json', JSON.stringify(integration_map, null, 2));
           "
 
       # =========================
@@ -60,27 +84,34 @@ jobs:
 
           node -e "
             const fs = require('fs');
-
-            let map = JSON.parse(fs.readFileSync('integration_map.json','utf8'));
+            let map = JSON.parse(fs.readFileSync('integration_map.json', 'utf8'));
+            let port = 3000;
 
             Object.keys(map).forEach(app => {
-
               let dir = 'integrations/' + app;
               fs.mkdirSync(dir, { recursive: true });
 
-              let api =
-'const express = require(\"express\");\n' +
-'const app = express();\n\n' +
-'app.use(express.json());\n\n' +
-'app.get(\"/external-status\", (req,res) => {\n' +
-'  res.json({ app: \"' + app + '\", status: \"connected\", sources: [\"rest\",\"json\",\"webhook\"] });\n' +
-'});\n\n' +
-'app.post(\"/sync\", (req,res) => {\n' +
-'  res.json({ app: \"' + app + '\", synced: true, payload: req.body });\n' +
-'});\n\n' +
-'app.listen(3000, () => console.log(\"Integration layer running for ' + app + '\"));\n';
+              let apiCode = [
+                'const express = require(\"express\");',
+                'const app = express();',
+                '',
+                'app.use(express.json());',
+                '',
+                'app.get(\"/external-status\", (req, res) => {',
+                '  res.json({ app: \"' + app + '\", status: \"connected\", sources: [\"rest\", \"json\", \"webhook\"] });',
+                '});',
+                '',
+                'app.post(\"/sync\", (req, res) => {',
+                '  res.json({ app: \"' + app + '\", synced: true, payload: req.body });',
+                '});',
+                '',
+                'const PORT = process.env.PORT || ' + port + ';',
+                'app.listen(PORT, () => console.log(\"Integration layer running for ' + app + ' on port \" + PORT));',
+                ''
+              ].join('\\n');
 
-              fs.writeFileSync(dir + '/api.js', api);
+              fs.writeFileSync(dir + '/api.js', apiCode);
+              port++;
             });
           "
 
@@ -89,7 +120,7 @@ jobs:
       # =========================
       - name: Create DB Layer
         run: |
-          cat <<EOF > db_layer.json
+          cat <<'EOF' > db_layer.json
 {
   "type": "abstracted",
   "supported_backends": ["supabase", "firebase", "local_json", "sqlite"],
@@ -109,7 +140,7 @@ EOF
         run: |
           mkdir -p auth
 
-          cat <<EOF > auth/auth.js
+          cat <<'EOF' > auth/auth.js
 const users = [];
 
 function login(user) {
@@ -134,14 +165,11 @@ EOF
         run: |
           node -e "
             const fs = require('fs');
-
-            let memory = JSON.parse(fs.readFileSync('memory.json','utf8'));
-
+            let memory = JSON.parse(fs.readFileSync('memory.json', 'utf8'));
             memory.integrations = memory.apps.map(a => a + '_api_connected');
             memory.api_links = memory.apps.map(a => '/integrations/' + a);
             memory.auth_enabled = true;
-
-            fs.writeFileSync('memory.json', JSON.stringify(memory,null,2));
+            fs.writeFileSync('memory.json', JSON.stringify(memory, null, 2));
           "
 
       # =========================
@@ -151,17 +179,13 @@ EOF
         run: |
           node -e "
             const fs = require('fs');
-
-            let memory = JSON.parse(fs.readFileSync('memory.json','utf8'));
-
+            let memory = JSON.parse(fs.readFileSync('memory.json', 'utf8'));
             let score = 50;
             if (memory.auth_enabled) score += 20;
             if (memory.integrations.length > 0) score += 20;
             if (memory.api_links.length > 0) score += 10;
-
             memory.integration_health = Math.min(100, score);
-
-            fs.writeFileSync('memory.json', JSON.stringify(memory,null,2));
+            fs.writeFileSync('memory.json', JSON.stringify(memory, null, 2));
           "
 
       # =========================
@@ -171,6 +195,7 @@ EOF
         run: |
           git config user.name "bude-v21"
           git config user.email "v21@bude.tech"
-          git add .
-          git commit -m "V21 real-world integration layer" || exit 0
-          git push
+          git add -A
+          git commit -m "V21 real-world integration layer" || true
+          git pull --rebase origin ${{ github.ref_name }} || true
+          git push origin ${{ github.ref_name }} || true
