@@ -28,7 +28,7 @@ jobs:
           fi
 
       # =========================
-      # 🔌 DEFINE INTEGRATION LAYER STRUCTURE
+      # 🔌 BUILD INTEGRATION MAP
       # =========================
       - name: Build Integration Map
         run: |
@@ -40,21 +40,19 @@ jobs:
             let integration_map = {};
 
             memory.apps.forEach(app => {
-
               integration_map[app] = {
                 api: '/api/' + app,
                 db: app + '_db',
                 auth: 'enabled',
-                external: ['rest', 'json', 'webhook']
+                external: ['rest','json','webhook']
               };
-
             });
 
             fs.writeFileSync('integration_map.json', JSON.stringify(integration_map,null,2));
           "
 
       # =========================
-      # 🧩 GENERATE API CONNECTORS (REAL-WORLD READY)
+      # 🧩 GENERATE API CONNECTORS (FIXED SAFE VERSION)
       # =========================
       - name: Generate API Connectors
         run: |
@@ -70,40 +68,24 @@ jobs:
               let dir = 'integrations/' + app;
               fs.mkdirSync(dir, { recursive: true });
 
-              let api = \`
-const express = require('express');
-const app = express();
-
-app.use(express.json());
-
-// External API connector for \${app}
-app.get('/external-status', (req,res) => {
-  res.json({
-    app: '\${app}',
-    status: 'connected',
-    sources: ['rest','json','webhook']
-  });
-});
-
-app.post('/sync', (req,res) => {
-  res.json({
-    app: '\${app}',
-    synced: true,
-    payload: req.body
-  });
-});
-
-app.listen(3000, () => {
-  console.log('Integration layer running for \${app}');
-});
-\`;
+              let api =
+'const express = require(\"express\");\n' +
+'const app = express();\n\n' +
+'app.use(express.json());\n\n' +
+'app.get(\"/external-status\", (req,res) => {\n' +
+'  res.json({ app: \"' + app + '\", status: \"connected\", sources: [\"rest\",\"json\",\"webhook\"] });\n' +
+'});\n\n' +
+'app.post(\"/sync\", (req,res) => {\n' +
+'  res.json({ app: \"' + app + '\", synced: true, payload: req.body });\n' +
+'});\n\n' +
+'app.listen(3000, () => console.log(\"Integration layer running for ' + app + '\"));\n';
 
               fs.writeFileSync(dir + '/api.js', api);
             });
           "
 
       # =========================
-      # 🗄 DATABASE ABSTRACTION LAYER
+      # 🗄 DATABASE LAYER
       # =========================
       - name: Create DB Layer
         run: |
@@ -121,15 +103,13 @@ app.listen(3000, () => {
 EOF
 
       # =========================
-      # 🔐 AUTHENTICATION FRAMEWORK (SCAFFOLD)
+      # 🔐 AUTH FRAMEWORK
       # =========================
       - name: Auth System Scaffold
         run: |
           mkdir -p auth
 
           cat <<EOF > auth/auth.js
-// Authentication scaffold (NOT production secure yet)
-
 const users = [];
 
 function login(user) {
@@ -148,7 +128,7 @@ module.exports = { login, register };
 EOF
 
       # =========================
-      # 🔌 REGISTER INTEGRATION STATE
+      # 🔌 UPDATE REGISTRY
       # =========================
       - name: Update Integration Registry
         run: |
@@ -159,14 +139,13 @@ EOF
 
             memory.integrations = memory.apps.map(a => a + '_api_connected');
             memory.api_links = memory.apps.map(a => '/integrations/' + a);
-
             memory.auth_enabled = true;
 
             fs.writeFileSync('memory.json', JSON.stringify(memory,null,2));
           "
 
       # =========================
-      # 📊 INTEGRATION HEALTH SCORE
+      # 📊 HEALTH CHECK
       # =========================
       - name: Integration Health Check
         run: |
@@ -176,7 +155,6 @@ EOF
             let memory = JSON.parse(fs.readFileSync('memory.json','utf8'));
 
             let score = 50;
-
             if (memory.auth_enabled) score += 20;
             if (memory.integrations.length > 0) score += 20;
             if (memory.api_links.length > 0) score += 10;
@@ -187,7 +165,7 @@ EOF
           "
 
       # =========================
-      # 📦 COMMIT INTEGRATION LAYER
+      # 📦 COMMIT
       # =========================
       - name: Commit V21 Integration Layer
         run: |
