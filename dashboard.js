@@ -3,6 +3,9 @@ const GITHUB_REPO = "Bude-Tech";
 const GITHUB_FULL = "bude404-ops/Bude-Tech";
 const API_BASE = window.location.origin;
 
+let autoWorkInterval = null;
+let isAutoWorking = false;
+
 // ─── TABS ───
 function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -14,6 +17,102 @@ function switchTab(tabId) {
     if (tabId === 'memory') loadMemory();
     if (tabId === 'tasks') loadTasks();
     if (tabId === 'evolution') loadEvolution();
+}
+
+// ─── AUTO WORK ───
+function toggleAutoWork() {
+    const btn = document.getElementById('auto-work-btn');
+    const status = document.getElementById('auto-work-status');
+    
+    if (isAutoWorking) {
+        // STOP
+        clearInterval(autoWorkInterval);
+        autoWorkInterval = null;
+        isAutoWorking = false;
+        btn.textContent = 'AUTO WORK: OFF';
+        btn.classList.remove('active');
+        status.textContent = 'Tap to start autonomous evolution';
+        status.classList.remove('working');
+        addChatMsg('bude', 'AUTO WORK stopped.');
+    } else {
+        // START
+        isAutoWorking = true;
+        btn.textContent = 'AUTO WORK: ON';
+        btn.classList.add('active');
+        status.textContent = 'Running evolution cycles every 30 seconds...';
+        status.classList.add('working');
+        addChatMsg('bude', 'AUTO WORK started! Running evolution cycles...');
+        
+        // Run immediately
+        runEvolutionCycle();
+        
+        // Then every 30 seconds
+        autoWorkInterval = setInterval(runEvolutionCycle, 30000);
+    }
+}
+
+async function runEvolutionCycle() {
+    addChatMsg('bude', `[${new Date().toLocaleTimeString()}] Triggering evolution cycle...`);
+    
+    try {
+        // Try to trigger GitHub Actions workflow_dispatch
+        const triggered = await triggerGitHubWorkflow();
+        
+        if (triggered) {
+            addChatMsg('bude', 'Evolution cycle queued on GitHub Actions.');
+        } else {
+            // Fallback: simulate local evolution
+            addChatMsg('bude', 'GitHub trigger failed. Simulating local task generation...');
+            simulateLocalEvolution();
+        }
+        
+        // Refresh displays
+        loadStatus();
+        loadTasks();
+        
+    } catch (e) {
+        addChatMsg('bude', `Cycle error: ${e.message}`, 'ERROR');
+    }
+}
+
+async function triggerGitHubWorkflow() {
+    // This requires a GitHub personal access token with repo scope
+    // For now, we simulate the trigger
+    // In production, you'd call GitHub API here
+    
+    const token = localStorage.getItem('github_token');
+    if (!token) {
+        addChatMsg('bude', 'No GitHub token stored. Add one with /token <your_token>');
+        return false;
+    }
+    
+    try {
+        const resp = await fetch(`https://api.github.com/repos/${GITHUB_FULL}/actions/workflows/evolve.yml/dispatches`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({ref: 'main'})
+        });
+        return resp.status === 204;
+    } catch (e) {
+        return false;
+    }
+}
+
+function simulateLocalEvolution() {
+    // When GitHub isn't reachable, generate tasks locally
+    const tasks = [
+        "Analyze current repo structure",
+        "Identify missing dashboard components",
+        "Plan next agent module",
+        "Review evolution logs for errors",
+        "Optimize existing code"
+    ];
+    const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+    queueTask(`[AUTO] ${randomTask}`);
+    addChatMsg('bude', `Auto-generated task: "${randomTask}"`);
 }
 
 // ─── CHAT / COMMANDS ───
@@ -43,12 +142,14 @@ function handleCommand(cmd) {
 /help — show commands
 /status — refresh system status
 /memory — view memory.json
-/evolve — trigger evolution cycle
+/evolve — trigger single evolution cycle
+/auto — toggle auto work mode
 /task <desc> — queue new task
 /tasks — view task list
 /agent <type> — request agent module
 /crypto <wallet> — analyze Solana wallet
 /log — show evolution log
+/token <key> — store GitHub token
 /repo — open GitHub repo
 /clear — clear chat`);
             break;
@@ -66,8 +167,12 @@ function handleCommand(cmd) {
             break;
             
         case 'evolve':
-            addChatMsg('bude', 'Queueing evolution cycle...');
-            queueCommand('evolve', 'Trigger evolution cycle');
+            addChatMsg('bude', 'Triggering single evolution cycle...');
+            runEvolutionCycle();
+            break;
+            
+        case 'auto':
+            toggleAutoWork();
             break;
             
         case 'task':
@@ -107,6 +212,15 @@ function handleCommand(cmd) {
             loadEvolution();
             switchTab('evolution');
             addChatMsg('bude', 'Evolution log loaded.');
+            break;
+            
+        case 'token':
+            if (!args) {
+                addChatMsg('bude', 'Usage: /token <github_personal_access_token>');
+                return;
+            }
+            localStorage.setItem('github_token', args);
+            addChatMsg('bude', 'GitHub token stored. Auto-work can now trigger real workflows.');
             break;
             
         case 'repo':
@@ -214,8 +328,8 @@ async function loadStatus() {
                 <div class="value" style="color:${errors>0?'#ff4444':'#00ff88'}">${errors}</div>
             </div>
             <div class="status-card">
-                <h3>Repo</h3>
-                <div class="value" style="font-size:0.75rem">${GITHUB_FULL}</div>
+                <h3>Auto Work</h3>
+                <div class="value" style="color:${isAutoWorking?'#00ff88':'#ff4444'};font-size:1rem">${isAutoWorking?'ON':'OFF'}</div>
             </div>
         `;
         
@@ -263,7 +377,7 @@ async function loadTasks() {
         ];
         
         if (allTasks.length === 0) {
-            list.innerHTML = '<li>No tasks. Use /task <description> to add one.</li>';
+            list.innerHTML = '<li>No tasks. Use /task or tap AUTO WORK.</li>';
             return;
         }
         
@@ -290,7 +404,7 @@ async function loadEvolution() {
         const lines = log.split('\n').slice(-50).join('\n');
         display.textContent = lines || 'Log is empty.';
     } catch (e) {
-        display.textContent = 'No evolution log. Run /evolve first.';
+        display.textContent = 'No evolution log. Run /evolve or tap AUTO WORK.';
     }
 }
 
@@ -310,5 +424,6 @@ async function fetchText(path) {
 // ─── INIT ───
 document.addEventListener('DOMContentLoaded', () => {
     loadStatus();
-    addChatMsg('bude', `BudE OS v0.2 online. Repo: ${GITHUB_FULL}. Type /help for commands.`);
+    addChatMsg('bude', `BudE OS v0.2 online. Repo: ${GITHUB_FULL}.`);
+    addChatMsg('bude', 'Tap AUTO WORK to start autonomous evolution, or type /help for commands.');
 });
