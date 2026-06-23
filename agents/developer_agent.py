@@ -1,3 +1,2 @@
 import os
-# developer agent
-# ...
+# developer agent implementation
