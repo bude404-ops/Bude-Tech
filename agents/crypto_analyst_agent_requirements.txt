@@ -1,4 +1,0 @@
-# Requirements for Crypto Analyst Agent
-# Install required libraries
-pip install pandas
-pip install yfinance
