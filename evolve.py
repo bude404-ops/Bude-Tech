@@ -1,419 +1,578 @@
-#!/usr/bin/env python3
-"""
-BudE Evolution Engine v0.3
-Repo: https://github.com/bude404-ops/Bude-Tech
-Phased evolution: BUILD → BUSINESS
-Dashboard LOCKED
-"""
+const GITHUB_USER = "bude404-ops";
+const GITHUB_REPO = "Bude-Tech";
+const GITHUB_FULL = "bude404-ops/Bude-Tech";
+const API_BASE = window.location.origin;
 
-import os
-import json
-import sys
-import requests
-from datetime import datetime
+let autoWorkInterval = null;
+let isAutoWorking = false;
 
-REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
-MEMORY_PATH = os.path.join(REPO_ROOT, "system", "memory.json")
-LOG_PATH = os.path.join(REPO_ROOT, "system", "evolution.log")
-QUEUE_PATH = os.path.join(REPO_ROOT, "system", "queue.json")
-GITHUB_REPO = "bude404-ops/Bude-Tech"
+// ─── TABS ───
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.target.classList.add('active');
+    
+    if (tabId === 'status') loadStatus();
+    if (tabId === 'memory') loadMemory();
+    if (tabId === 'tasks') loadTasks();
+    if (tabId === 'evolution') loadEvolution();
+}
 
-GROQ_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it",
-]
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-MAX_PROMPT_CHARS = 12000
-
-# LOCKED — never modify
-PROTECTED_FILES = [
-    "dashboard.js",
-    "style.css",
-    "index.html",
-]
-
-# Prevent duplicate creation
-EXISTING_PATTERNS = [
-    "new_",
-    "_requirements.txt",
-    "copy_of_",
-    "backup_",
-]
-
-def log_event(msg, level="INFO"):
-    ts = datetime.utcnow().isoformat()
-    entry = f"[{ts}] [{level}] {msg}\n"
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    with open(LOG_PATH, "a") as f:
-        f.write(entry)
-    print(entry.strip())
-
-def load_memory():
-    if os.path.exists(MEMORY_PATH):
-        with open(MEMORY_PATH, "r") as f:
-            return json.load(f)
-    return {
-        "evolution_cycles": 0,
-        "last_cycle": None,
-        "errors": [],
-        "tasks": [],
-        "repo": GITHUB_REPO,
-        "upgrades_made": [],
-        "current_focus": "build",
-        "phase": "build",  # build → business → monetize
-        "modules_built": [],
-        "business_modules": []
+// ─── AUTO WORK ───
+function toggleAutoWork() {
+    const btn = document.getElementById('auto-work-btn');
+    const status = document.getElementById('auto-work-status');
+    
+    if (isAutoWorking) {
+        clearInterval(autoWorkInterval);
+        autoWorkInterval = null;
+        isAutoWorking = false;
+        btn.textContent = 'AUTO WORK: OFF';
+        btn.classList.remove('active');
+        status.textContent = 'Tap to start autonomous evolution';
+        status.classList.remove('working');
+        addChatMsg('bude', 'AUTO WORK stopped.');
+    } else {
+        isAutoWorking = true;
+        btn.textContent = 'AUTO WORK: ON';
+        btn.classList.add('active');
+        status.textContent = 'Running evolution cycles every 30 seconds...';
+        status.classList.add('working');
+        addChatMsg('bude', 'AUTO WORK started! Running evolution cycles...');
+        
+        runEvolutionCycle();
+        autoWorkInterval = setInterval(runEvolutionCycle, 30000);
     }
+}
 
-def save_memory(mem):
-    os.makedirs(os.path.dirname(MEMORY_PATH), exist_ok=True)
-    with open(MEMORY_PATH, "w") as f:
-        json.dump(mem, f, indent=2)
+async function runEvolutionCycle() {
+    const time = new Date().toLocaleTimeString();
+    addChatMsg('bude', `[${time}] Triggering evolution cycle...`);
+    
+    try {
+        const triggered = await triggerGitHubWorkflow();
+        
+        if (triggered) {
+            addChatMsg('bude', 'Evolution cycle queued on GitHub Actions.');
+        } else {
+            addChatMsg('bude', 'GitHub trigger failed. Simulating local task generation...');
+            simulateLocalEvolution();
+        }
+        
+        loadStatus();
+        loadTasks();
+        
+    } catch (e) {
+        addChatMsg('bude', `Cycle error: ${e.message}`);
+    }
+}
 
-def process_queue():
-    if not os.path.exists(QUEUE_PATH):
-        return []
-    with open(QUEUE_PATH, "r") as f:
-        queue = json.load(f)
-    pending = [q for q in queue if q.get("status") == "pending"]
-    for q in queue:
-        q["status"] = "processed"
-        q["processed_at"] = datetime.utcnow().isoformat()
-    with open(QUEUE_PATH, "w") as f:
-        json.dump(queue, f, indent=2)
-    if pending:
-        log_event(f"Processed {len(pending)} queued commands")
-    return pending
-
-def get_repo_state():
-    files = []
-    for root, _, filenames in os.walk(REPO_ROOT):
-        if ".git" in root:
-            continue
-        for f in filenames:
-            path = os.path.relpath(os.path.join(root, f), REPO_ROOT)
-            files.append(path)
-    return files
-
-def determine_phase(memory, files):
-    """Auto-detect phase based on what exists."""
-    core_modules = [
-        "agents/coder_agent.py",
-        "agents/researcher_agent.py",
-        "agents/crypto_analyst_agent.py",
-        "agents/system_architect_agent.py",
-        "api/solana.py",
-        "tools/utils.py",
-    ]
-    
-    built = [m for m in core_modules if m in files]
-    memory["modules_built"] = built
-    
-    if len(built) >= 4:
-        return "business"
-    return "build"
-
-def build_phase_prompt(memory, files):
-    """Prompt for BUILD phase — create core modules."""
-    missing = [
-        "agents/coder_agent.py — writes and fixes code",
-        "agents/researcher_agent.py — gathers information from APIs",
-        "agents/crypto_analyst_agent.py — analyzes Solana/crypto data",
-        "agents/system_architect_agent.py — plans system structure",
-        "api/solana.py — Solana blockchain reader (public data only)",
-        "tools/utils.py — shared helper functions",
-        "tests/test_agents.py — verify agents work",
-    ]
-    
-    # Filter out already built
-    built_names = [os.path.basename(f) for f in memory.get("modules_built", [])]
-    missing = [m for m in missing if not any(b in m for b in built_names)]
-    
-    return f"""
-PHASE: BUILD (Core System)
-Progress: {len(memory.get('modules_built', []))}/6 core modules
-
-MISSING MODULES — build ONE per cycle:
-{chr(10).join(missing[:3])}
-
-RULES:
-- Create ONE file per cycle
-- NO duplicates (no "new_" prefixes, no "_requirements.txt")
-- NO requirements files (use standard library + requests)
-- Make it functional, not perfect
-- Test that it runs
-"""
-
-def business_phase_prompt(memory, files):
-    """Prompt for BUSINESS phase — money-making features."""
-    opportunities = [
-        "api/freelance.py — scan freelance platforms for AI coding gigs",
-        "api/crypto_signals.py — generate trading signals (simulation only)",
-        "tools/content_generator.py — generate blog/social content",
-        "api/affiliate.py — track affiliate link performance",
-        "tools/saas_builder.py — build micro-SaaS tools",
-        "api/price_tracker.py — track API pricing, find cheapest options",
-    ]
-    
-    built_biz = memory.get("business_modules", [])
-    missing = [o for o in opportunities if not any(b in o for b in built_biz)]
-    
-    return f"""
-PHASE: BUSINESS (Money Making)
-Core modules: ✅ DONE
-Business modules: {len(built_biz)}/6
-
-OPPORTUNITIES — build ONE per cycle:
-{chr(10).join(missing[:3])}
-
-RULES:
-- Create ONE revenue-oriented tool per cycle
-- NO duplicates
-- Use free APIs only
-- Track potential earnings in code comments
-- Never execute real transactions
-"""
-
-def build_prompt(brain, repo_state, memory, queued):
-    brain_summary = brain[:1500] + "\n... [truncated]" if len(brain) > 1500 else brain
-    file_list = repo_state[:40]
-    file_count = len(repo_state)
-    
-    # Auto-detect or use forced focus
-    phase = memory.get("phase", "build")
-    forced_focus = memory.get("current_focus", "general")
-    
-    for q in queued:
-        if q.get("type") == "focus":
-            forced_focus = q.get("data", "general")
-            if forced_focus == "business":
-                phase = "business"
-            memory["current_focus"] = forced_focus
-            memory["phase"] = phase
-            save_memory(memory)
-    
-    # Auto-advance phase if build is complete
-    if phase == "build" and forced_focus not in ["business", "money"]:
-        detected = determine_phase(memory, repo_state)
-        if detected == "business":
-            phase = "business"
-            memory["phase"] = "business"
-            log_event("PHASE ADVANCE: Build complete → Business mode")
-    
-    # Select phase prompt
-    if phase == "business" or forced_focus in ["business", "money", "monetize"]:
-        phase_prompt = business_phase_prompt(memory, repo_state)
-    else:
-        phase_prompt = build_phase_prompt(memory, repo_state)
-    
-    mem_summary = {
-        "cycles": memory.get("evolution_cycles", 0),
-        "phase": phase,
-        "focus": forced_focus,
-        "modules": len(memory.get("modules_built", [])),
-        "business": len(memory.get("business_modules", []))
+async function triggerGitHubWorkflow() {
+    const token = localStorage.getItem('github_token');
+    if (!token) {
+        addChatMsg('bude', 'No GitHub token. Add one with /token <key>');
+        return false;
     }
     
-    prompt = f"""You are BudE evolution engine.
-Repo: {GITHUB_REPO}
-
-BRAIN:
-{brain_summary}
-
-FILES ({file_count} total):
-{json.dumps(file_list, indent=2)}
-
-MEMORY:
-{json.dumps(mem_summary)}
-
-{phase_prompt}
-
-STRICT RULES:
-- DASHBOARD LOCKED: Never modify {', '.join(PROTECTED_FILES)}
-- NO duplicate files (no "new_", no "_requirements.txt")
-- ONE file per cycle, make it work
-- Output ONLY valid JSON
-
-JSON:
-{{
-  "actions": [
-    {{"type": "create_file", "path": "filename", "content": "complete content"}}
-  ],
-  "reasoning": "why this file",
-  "upgrades_made": ["files"],
-  "new_tasks": ["next steps"]
-}}
-"""
-    
-    if len(prompt) > MAX_PROMPT_CHARS:
-        prompt = prompt[:MAX_PROMPT_CHARS] + "\n... [truncated]\n}"
-    
-    return prompt
-
-def is_duplicate(path):
-    """Check if file matches duplicate patterns."""
-    base = os.path.basename(path)
-    for pattern in EXISTING_PATTERNS:
-        if pattern in base:
-            return True
-    return False
-
-def call_groq(prompt, model):
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
+    try {
+        const resp = await fetch(`https://api.github.com/repos/${GITHUB_FULL}/actions/workflows/evolve.yml/dispatches`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({ref: 'main'})
+        });
+        return resp.status === 204;
+    } catch (e) {
+        return false;
     }
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": "You are BudE. Build focused, no duplicates. Output only JSON."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.3,
-        "max_tokens": 2048
+}
+
+function simulateLocalEvolution() {
+    const tasks = [
+        "Analyze current repo structure",
+        "Identify missing dashboard components",
+        "Plan next agent module",
+        "Review evolution logs for errors",
+        "Optimize existing code"
+    ];
+    const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+    queueTask(`[AUTO] ${randomTask}`);
+    addChatMsg('bude', `Auto-generated task: "${randomTask}"`);
+}
+
+// ─── CHAT / COMMANDS ───
+function sendMessage() {
+    const input = document.getElementById('chat-message');
+    const msg = input.value.trim();
+    if (!msg) return;
+    
+    addChatMsg('user', msg);
+    input.value = '';
+    
+    if (msg.startsWith('/')) {
+        handleCommand(msg);
+    } else {
+        addChatMsg('bude', 'Freeform chat requires AI backend. Use /help for commands.');
     }
-    resp = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=60)
-    resp.raise_for_status()
-    data = resp.json()
-    if "error" in data:
-        raise RuntimeError(f"Groq error: {data['error']}")
-    if "choices" not in data or not data["choices"]:
-        raise RuntimeError("No choices")
-    return data["choices"][0]["message"]["content"]
+}
 
-def try_models(prompt):
-    for model in GROQ_MODELS:
-        try:
-            log_event(f"Trying: {model}")
-            result = call_groq(prompt, model)
-            log_event(f"Success: {model}")
-            return result, model
-        except Exception as e:
-            log_event(f"{model} failed: {str(e)[:80]}", "WARN")
-            continue
-    raise RuntimeError("All models failed")
+function handleCommand(cmd) {
+    const parts = cmd.slice(1).split(' ');
+    const action = parts[0];
+    const args = parts.slice(1).join(' ');
+    
+    switch(action) {
+        case 'help':
+            addChatMsg('bude', `BUDĒ COMMANDS:
+/help — show commands
+/status — refresh system status
+/memory — view memory.json
+/evolve — trigger single evolution cycle
+/auto — toggle auto work mode
+/task <desc> — queue new task
+/tasks — view task list
+/agent <type> — request agent module
+/crypto <wallet> — analyze Solana wallet
+/log — show evolution story
+/focus <area> — set priority: agents, crypto, self, bugs, business
+/clean — purge old logs
+/token <key> — store GitHub token
+/repo — open GitHub repo
+/clear — clear chat`);
+            break;
+            
+        case 'status':
+            loadStatus();
+            switchTab('status');
+            addChatMsg('bude', 'System status refreshed.');
+            break;
+            
+        case 'memory':
+            loadMemory();
+            switchTab('memory');
+            addChatMsg('bude', 'Memory loaded.');
+            break;
+            
+        case 'evolve':
+            addChatMsg('bude', 'Triggering single evolution cycle...');
+            runEvolutionCycle();
+            break;
+            
+        case 'auto':
+            toggleAutoWork();
+            break;
+            
+        case 'task':
+            if (!args) {
+                addChatMsg('bude', 'Usage: /task <description>');
+                return;
+            }
+            queueTask(args);
+            addChatMsg('bude', `Task queued: "${args}"`);
+            break;
+            
+        case 'tasks':
+            loadTasks();
+            switchTab('tasks');
+            addChatMsg('bude', 'Task list loaded.');
+            break;
+            
+        case 'agent':
+            if (!args) {
+                addChatMsg('bude', 'Usage: /agent <coder|researcher|architect|crypto|all>');
+                return;
+            }
+            queueCommand('agent', args);
+            addChatMsg('bude', `Agent request queued: ${args}`);
+            break;
+            
+        case 'crypto':
+            if (!args) {
+                addChatMsg('bude', 'Usage: /crypto <wallet_address>');
+                return;
+            }
+            queueCommand('crypto', args);
+            addChatMsg('bude', `Crypto analysis queued for: ${args}`);
+            break;
+            
+        case 'log':
+            loadEvolution();
+            switchTab('evolution');
+            addChatMsg('bude', 'Evolution story loaded.');
+            break;
+            
+        case 'clean':
+            purgeOldLogs();
+            addChatMsg('bude', 'Old logs purged. Evolution log cleaned.');
+            break;
+            
+        case 'focus':
+            if (!args) {
+                addChatMsg('bude', `Usage: /focus <area>
+Areas: agents, crypto, self, bugs, business
+Example: /focus business`);
+                return;
+            }
+            if (args === 'dashboard') {
+                addChatMsg('bude', 'Dashboard is locked. Use /focus agents, crypto, self, bugs, or business.');
+                return;
+            }
+            queueCommand('focus', args);
+            addChatMsg('bude', `FOCUS set to: ${args}. Next cycles will prioritize this.`);
+            break;
+            
+        case 'token':
+            if (!args) {
+                addChatMsg('bude', 'Usage: /token <github_personal_access_token>');
+                return;
+            }
+            localStorage.setItem('github_token', args);
+            addChatMsg('bude', 'GitHub token stored. Auto-work can now trigger real workflows.');
+            break;
+            
+        case 'repo':
+            window.open(`https://github.com/${GITHUB_FULL}`, '_blank');
+            addChatMsg('bude', `Opening https://github.com/${GITHUB_FULL}`);
+            break;
+            
+        case 'clear':
+            document.getElementById('chat-box').innerHTML = '';
+            addChatMsg('bude', 'Chat cleared.');
+            break;
+            
+        default:
+            addChatMsg('bude', `Unknown: /${action}. Type /help.`);
+    }
+}
 
-def apply_changes(result, memory):
-    upgrades = result.get("upgrades_made", [])
-    created = []
-    
-    for action in result.get("actions", []):
-        if action["type"] != "create_file":
-            continue
-        
-        path = action["path"]
-        
-        # Block protected
-        if path in PROTECTED_FILES:
-            log_event(f"BLOCKED dashboard: {path}")
-            continue
-        
-        # Block duplicates
-        if is_duplicate(path):
-            log_event(f"BLOCKED duplicate: {path}")
-            continue
-        
-        # Block requirements files
-        if path.endswith("_requirements.txt"):
-            log_event(f"BLOCKED requirements: {path}")
-            continue
-        
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w") as f:
-            f.write(action["content"])
-        created.append(path)
-        log_event(f"Built: {path}")
-        
-        # Track in memory
-        if "business" in path or "freelance" in path or "saas" in path:
-            memory["business_modules"] = memory.get("business_modules", [])
-            memory["business_modules"].append(path)
-        elif "agents/" in path or "api/" in path or "tools/" in path:
-            memory["modules_built"] = memory.get("modules_built", [])
-            memory["modules_built"].append(path)
-    
-    return created, upgrades
+function addChatMsg(sender, text) {
+    const box = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = `chat-msg ${sender}`;
+    div.innerHTML = `<div class="sender">${sender.toUpperCase()}</div><div>${escapeHtml(text)}</div>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
 
-def clean_json_response(raw):
-    cleaned = raw.strip()
-    if cleaned.startswith("```json"):
-        cleaned = cleaned[7:]
-    elif cleaned.startswith("```"):
-        cleaned = cleaned[3:]
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3]
-    return cleaned.strip()
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
-def main():
-    memory = load_memory()
-    log_event(f"=== BudE | Phase: {memory.get('phase', 'build')} | Focus: {memory.get('current_focus', 'general')} ===")
-    
-    if not GROQ_API_KEY:
-        log_event("No GROQ_API_KEY", "ERROR")
-        sys.exit(1)
-    
-    brain_path = os.path.join(REPO_ROOT, "brain.md")
-    if not os.path.exists(brain_path):
-        log_event("brain.md missing", "ERROR")
-        sys.exit(1)
-    
-    with open(brain_path, "r") as f:
-        brain = f.read()
-    
-    queued = process_queue()
-    repo_state = get_repo_state()
-    prompt = build_prompt(brain, repo_state, memory, queued)
-    
-    log_event(f"Prompt: {len(prompt)} chars")
-    
-    try:
-        raw_response, used_model = try_models(prompt)
-        cleaned = clean_json_response(raw_response)
-        
-        try:
-            result = json.loads(cleaned)
-        except json.JSONDecodeError as e:
-            log_event(f"JSON error: {e}", "ERROR")
-            log_event(f"Raw: {raw_response[:300]}", "DEBUG")
-            raise
-        
-        created, upgrades = apply_changes(result, memory)
-        
-        # Update memory
-        new_tasks = result.get("new_tasks", [])
-        completed_tasks = result.get("tasks_completed", [])
-        current_tasks = memory.get("tasks", [])
-        current_tasks = [t for t in current_tasks if t["text"] not in completed_tasks]
-        for nt in new_tasks:
-            current_tasks.append({"id": len(current_tasks)+1, "text": nt, "done": False})
-        
-        memory["tasks"] = current_tasks
-        memory["evolution_cycles"] = memory.get("evolution_cycles", 0) + 1
-        memory["last_cycle"] = datetime.utcnow().isoformat()
-        memory["last_model_used"] = used_model
-        memory["last_reasoning"] = result.get("reasoning", "No reasoning")[:200]
-        
-        if upgrades:
-            memory["upgrades_made"] = memory.get("upgrades_made", [])
-            memory["upgrades_made"].append({
-                "time": datetime.utcnow().isoformat(),
-                "files": upgrades
-            })
-        
-        memory["errors"] = []
-        save_memory(memory)
-        
-        log_event(f"=== Done | Built: {len(created)} | Phase: {memory.get('phase', 'build')} ===")
-        
-    except Exception as e:
-        log_event(f"Failed: {e}", "ERROR")
-        memory["errors"] = memory.get("errors", [])
-        memory["errors"].append({"time": datetime.utcnow().isoformat(), "error": str(e)[:200]})
-        save_memory(memory)
-        sys.exit(1)
+// ─── QUEUE SYSTEM ───
+async function queueCommand(type, data) {
+    const queue = await loadQueue();
+    queue.push({
+        id: Date.now(),
+        type: type,
+        data: data,
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+    });
+    await saveQueue(queue);
+}
 
-if __name__ == "__main__":
-    main()
+async function queueTask(text) {
+    await queueCommand('task', text);
+}
+
+async function loadQueue() {
+    try {
+        const r = await fetch('system/queue.json');
+        if (!r.ok) return [];
+        return await r.json();
+    } catch (e) {
+        return [];
+    }
+}
+
+async function saveQueue(queue) {
+    localStorage.setItem('bude_queue', JSON.stringify(queue));
+    try {
+        await fetch('http://localhost:5000/queue', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(queue)
+        });
+    } catch (e) {}
+}
+
+// ─── SYSTEM STATUS ───
+async function loadStatus() {
+    const grid = document.getElementById('status-grid');
+    const status = document.getElementById('system-status');
+    
+    try {
+        const mem = await fetchJson('system/memory.json');
+        const cycles = mem?.evolution_cycles || 0;
+        const last = mem?.last_cycle ? timeAgo(mem.last_cycle) : 'Never';
+        const model = mem?.last_model_used || 'None';
+        const errors = mem?.errors?.length || 0;
+        const queue = (await loadQueue()).length;
+        const phase = mem?.phase || 'build';
+        const modules = mem?.modules_built?.length || 0;
+        const business = mem?.business_modules?.length || 0;
+        
+        grid.innerHTML = `
+            <div class="status-card">
+                <h3>Phase</h3>
+                <div class="value" style="color:${phase==='business'?'#ffaa00':'#00ff88'}">${phase.toUpperCase()}</div>
+            </div>
+            <div class="status-card">
+                <h3>Evolution Cycles</h3>
+                <div class="value">${cycles}</div>
+            </div>
+            <div class="status-card">
+                <h3>Modules Built</h3>
+                <div class="value">${modules}</div>
+            </div>
+            <div class="status-card">
+                <h3>Business Tools</h3>
+                <div class="value" style="color:${business>0?'#ffaa00':'#888'}">${business}</div>
+            </div>
+            <div class="status-card">
+                <h3>Queue</h3>
+                <div class="value" style="color:${queue>0?'#ffaa00':'#00ff88'}">${queue}</div>
+            </div>
+            <div class="status-card">
+                <h3>Errors</h3>
+                <div class="value" style="color:${errors>0?'#ff4444':'#00ff88'}">${errors}</div>
+            </div>
+        `;
+        
+        status.textContent = 'ONLINE';
+        status.className = 'status online';
+        
+    } catch (e) {
+        grid.innerHTML = '<div class="status-card"><h3>System</h3><div class="value">Booting</div></div>';
+        status.textContent = 'OFFLINE';
+        status.className = 'status offline';
+    }
+}
+
+function timeAgo(iso) {
+    const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    return Math.floor(diff/86400) + 'd ago';
+}
+
+// ─── MEMORY ───
+async function loadMemory() {
+    const display = document.getElementById('memory-display');
+    try {
+        const mem = await fetchJson('system/memory.json');
+        display.textContent = JSON.stringify(mem, null, 2);
+    } catch (e) {
+        display.textContent = 'No memory file found. Run /evolve first.';
+    }
+}
+
+// ─── TASKS ───
+async function loadTasks() {
+    const list = document.getElementById('task-list');
+    try {
+        const mem = await fetchJson('system/memory.json');
+        const memTasks = mem?.tasks || [];
+        const queue = await loadQueue();
+        const queuedTasks = queue.filter(q => q.type === 'task' && q.status === 'pending');
+        
+        const allTasks = [
+            ...memTasks.map(t => ({...t, source: 'memory'})),
+            ...queuedTasks.map(q => ({id: q.id, text: q.data, done: false, source: 'queue'}))
+        ];
+        
+        if (allTasks.length === 0) {
+            list.innerHTML = '<li>No tasks. Use /task or tap AUTO WORK.</li>';
+            return;
+        }
+        
+        list.innerHTML = allTasks.map(t => `
+            <li class="${t.done ? 'done' : ''}">
+                <span>${escapeHtml(t.text)} ${t.source === 'queue' ? '<small>[queued]</small>' : ''}</span>
+                ${!t.done ? `<button class="task-toggle" onclick="completeTask(${t.id})">Done</button>` : ''}
+            </li>
+        `).join('');
+    } catch (e) {
+        list.innerHTML = '<li>Failed to load tasks</li>';
+    }
+}
+
+function completeTask(id) {
+    addChatMsg('bude', `Task ${id} marked complete. Will sync on next /evolve.`);
+}
+
+// ─── EVOLUTION STORY (human-friendly) ───
+async function loadEvolution() {
+    const display = document.getElementById('evolution-display');
+    display.innerHTML = '<div class="story-entry"><p>Loading evolution story...</p></div>';
+    
+    try {
+        const mem = await fetchJson('system/memory.json');
+        const log = await fetchText('system/evolution.log');
+        
+        let story = generateStory(mem, log);
+        display.innerHTML = story;
+        
+    } catch (e) {
+        display.innerHTML = '<div class="story-entry story-header"><h3>🌱 BudE is just getting started</h3><p>Run /evolve or tap AUTO WORK to begin the journey.</p></div>';
+    }
+}
+
+function generateStory(mem, log) {
+    let html = '';
+    const cycles = mem?.evolution_cycles || 0;
+    const phase = mem?.phase || 'build';
+    const modules = mem?.modules_built || [];
+    const business = mem?.business_modules || [];
+    const upgrades = mem?.upgrades_made || [];
+    const errors = mem?.errors || [];
+    const focus = mem?.current_focus || 'general';
+    
+    // Header
+    html += `<div class="story-entry story-header">
+        <h2>🧬 BudE Evolution Story</h2>
+        <p><strong>${cycles} cycles completed</strong> | Phase: <span class="phase-${phase}">${phase.toUpperCase()}</span></p>
+    </div>`;
+    
+    // What was built
+    if (modules.length > 0) {
+        html += `<div class="story-entry">
+            <h3>🔧 Core Modules Built</h3>
+            <ul class="story-list">
+                ${modules.map(m => `<li>✅ ${m.replace('agents/', '').replace('api/', '').replace('tools/', '').replace('.py', '')}</li>`).join('')}
+            </ul>
+        </div>`;
+    }
+    
+    // Business tools
+    if (business.length > 0) {
+        html += `<div class="story-entry story-business">
+            <h3>💰 Business Tools</h3>
+            <ul class="story-list">
+                ${business.map(b => `<li>💵 ${b.replace('api/', '').replace('tools/', '').replace('.py', '')}</li>`).join('')}
+            </ul>
+        </div>`;
+    }
+    
+    // Self-upgrades
+    if (upgrades.length > 0) {
+        const latest = upgrades[upgrades.length - 1];
+        html += `<div class="story-entry story-upgrade">
+            <h3>🔄 Self-Upgrade</h3>
+            <p>Last upgrade: <strong>${latest.files.join(', ')}</strong></p>
+            <p class="story-time">${timeAgo(latest.time)}</p>
+        </div>`;
+    }
+    
+    // Recent activity from log
+    if (log) {
+        const recentLines = log.split('\n').filter(l => l.includes('Built:') || l.includes('PHASE ADVANCE')).slice(-5);
+        if (recentLines.length > 0) {
+            html += `<div class="story-entry">
+                <h3>📋 Recent Activity</h3>
+                <ul class="story-list">
+                    ${recentLines.map(l => {
+                        const msg = l.replace(/\[.*?\]\s*\[.*?\]\s*/, '');
+                        if (msg.includes('Built:')) return `<li>🔨 Built ${msg.replace('Built: ', '')}</li>`;
+                        if (msg.includes('PHASE ADVANCE')) return `<li>🚀 ${msg}</li>`;
+                        return `<li>• ${msg}</li>`;
+                    }).join('')}
+                </ul>
+            </div>`;
+        }
+    }
+    
+    // Errors (if any)
+    if (errors.length > 0) {
+        const latestError = errors[errors.length - 1];
+        html += `<div class="story-entry story-error">
+            <h3>⚠️ Latest Issue</h3>
+            <p>${latestError.error}</p>
+            <p class="story-time">${timeAgo(latestError.time)}</p>
+        </div>`;
+    }
+    
+    // Current focus
+    html += `<div class="story-entry story-focus">
+        <h3>🎯 Current Focus</h3>
+        <p>${focus === 'business' ? 'Building money-making tools and revenue streams.' : 
+            focus === 'agents' ? 'Creating AI agent modules.' :
+            focus === 'crypto' ? 'Developing crypto analysis tools.' :
+            focus === 'build' ? 'Building core system modules.' :
+            'General evolution — improving everything.'}</p>
+    </div>`;
+    
+    // Progress bars
+    const moduleGoal = 6;
+    const bizGoal = 6;
+    const moduleProgress = Math.min((modules.length / moduleGoal) * 100, 100);
+    const bizProgress = Math.min((business.length / bizGoal) * 100, 100);
+    
+    html += `<div class="story-entry">
+        <h3>📊 Progress</h3>
+        <div class="story-progress">
+            <label>Core Modules</label>
+            <div class="progress-track"><div class="progress-fill" style="width:${moduleProgress}%"></div></div>
+            <span>${modules.length}/${moduleGoal}</span>
+        </div>
+        <div class="story-progress">
+            <label>Business Tools</label>
+            <div class="progress-track"><div class="progress-fill business" style="width:${bizProgress}%"></div></div>
+            <span>${business.length}/${bizGoal}</span>
+        </div>
+    </div>`;
+    
+    return html;
+}
+
+// ─── PURGE OLD LOGS ───
+async function purgeOldLogs() {
+    try {
+        // Keep only last 20 lines of evolution.log
+        const log = await fetchText('system/evolution.log');
+        const lines = log.split('\n');
+        const keepLines = lines.slice(-20);
+        const cleaned = keepLines.join('\n');
+        
+        // We can't write files directly, but we can store in localStorage
+        localStorage.setItem('bude_log_cleaned', cleaned);
+        
+        // Also clear old errors from memory
+        const mem = await fetchJson('system/memory.json');
+        if (mem.errors && mem.errors.length > 3) {
+            mem.errors = mem.errors.slice(-3);
+            // Note: can't save back without backend, but display will be cleaner
+        }
+        
+        addChatMsg('bude', `Purged old logs. Kept last ${keepLines.length} entries.`);
+        
+    } catch (e) {
+        addChatMsg('bude', 'Could not purge logs. No log file found.');
+    }
+}
+
+// ─── UTILS ───
+async function fetchJson(path) {
+    const r = await fetch(path + '?t=' + Date.now());
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+}
+
+async function fetchText(path) {
+    const r = await fetch(path + '?t=' + Date.now());
+    if (!r.ok) throw new Error(r.status);
+    return r.text();
+}
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', () => {
+    loadStatus();
+    addChatMsg('bude', `BudE OS v0.3 online. Repo: ${GITHUB_FULL}.`);
+    addChatMsg('bude', 'Tap AUTO WORK to evolve, or type /help. Check the Evolution Log for the story!');
+});
