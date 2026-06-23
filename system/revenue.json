@@ -1,5 +1,6 @@
 {
   "total_earned_usd": 0,
+  "total_earned_sol": 0,
   "total_earned_crypto": 0,
   "subscriptions": {
     "free_tier": 0,
@@ -8,13 +9,14 @@
   },
   "products": {
     "crypto_newsletter": {
-      "price_monthly": 9.99,
-      "price_yearly": 99.99,
+      "price_monthly_sol": 0.05,
+      "price_yearly_sol": 0.5,
       "subscribers": 0,
-      "revenue": 0
+      "revenue_sol": 0
     }
   },
-  "affiliate_earnings": 0,
-  "freelance_earnings": 0,
+  "affiliate_earnings_sol": 0,
+  "freelance_earnings_sol": 0,
+  "solana_wallet": "AnJDRjTaxtRbqYazSkRjLm1Y2jSfuCmHJhygKiNyrKmx",
   "last_updated": "2026-06-23T00:00:00Z"
 }
