@@ -1,3 +1,5 @@
 import random
-# generate blog/social content
-# track potential earnings: $1000/month
+# Generate blog/social content
+def generate_content():
+    # Add content generation logic here
+    pass

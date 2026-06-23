@@ -1,5 +1,5 @@
 import requests
 # Track affiliate link performance
-def track_affiliate_performance():
-    # TODO: implement affiliate link tracking logic
-    return "Performance tracked"
+def track_affiliate_links():
+    # Add affiliate link tracking logic here
+    pass
