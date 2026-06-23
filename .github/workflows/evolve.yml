@@ -20,14 +20,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install requests
+      - name: Install dependencies
+        run: pip install requests
 
       - name: Run AI Evolution
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          python << 'EOF'
+          python - <<'EOF'
 import os
 import json
 import requests
@@ -43,7 +43,7 @@ for root, dirs, fs in os.walk("."):
     if ".git" in root:
         continue
     for file in fs:
-        files.append(os.path.join(root,file))
+        files.append(os.path.join(root, file))
 
 state = {
     "files": files[:200],
@@ -51,7 +51,6 @@ state = {
     "time": str(datetime.utcnow())
 }
 
-# Build prompt for AI
 prompt = f"""
 You are BudE evolution engine.
 
@@ -61,27 +60,19 @@ BRAIN:
 REPOSITORY STATE:
 {json.dumps(state, indent=2)}
 
-TASK:
-Return JSON ONLY with this format:
-
+Return JSON ONLY:
 {{
   "actions": [
     {{
       "type": "create_file",
       "path": "path/to/file",
-      "content": "file content here"
+      "content": "file content"
     }}
   ],
   "reasoning": "why changes are needed"
 }}
-
-Rules:
-- Only valid JSON
-- No markdown
-- Keep changes minimal and safe
 """
 
-# Call Groq (free tier)
 api_key = os.environ.get("GROQ_API_KEY")
 
 headers = {
@@ -92,7 +83,7 @@ headers = {
 payload = {
     "model": "llama-3.1-70b-versatile",
     "messages": [
-        {"role": "system", "content": "You are a precise code generation engine."},
+        {"role": "system", "content": "Return only valid JSON."},
         {"role": "user", "content": prompt}
     ],
     "temperature": 0.4
@@ -110,27 +101,24 @@ content = result["choices"][0]["message"]["content"]
 
 try:
     data = json.loads(content)
-except:
-    print("AI returned invalid JSON")
+except Exception as e:
+    print("Invalid JSON from AI")
     print(content)
-    exit(0)
+    raise e
 
-# Apply actions
 for action in data.get("actions", []):
     if action["type"] == "create_file":
         os.makedirs(os.path.dirname(action["path"]), exist_ok=True)
         with open(action["path"], "w") as f:
             f.write(action["content"])
 
-# Commit
 if data.get("actions"):
     os.system("git config user.name 'bude-ai'")
     os.system("git config user.email 'bude@ai.system'")
     os.system("git add .")
-    os.system("git commit -m 'BudE evolution v0.2 update'")
+    os.system("git commit -m 'BudE evolution cycle update'")
     os.system("git push")
-
-print("Evolution complete")
 EOF
 
-      - run: echo "Done"
+      - name: Done
+        run: echo "BudE cycle finished"
