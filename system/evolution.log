@@ -334,3 +334,11 @@
 [2026-06-23T18:31:03.397210] [INFO] Success: llama-3.1-8b-instant
 [2026-06-23T18:31:03.397599] [INFO] Built: api/trading_signals.py
 [2026-06-23T18:31:03.398272] [INFO] === Done | Built: 1 | Phase: business ===
+[2026-06-23T18:31:38.831328] [INFO] === BudE | Phase: business | Focus: general ===
+[2026-06-23T18:31:38.832700] [INFO] Prompt: 3638 chars
+[2026-06-23T18:31:38.832749] [INFO] Trying: llama-3.3-70b-versatile
+[2026-06-23T18:31:38.913633] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat
+[2026-06-23T18:31:38.914448] [INFO] Trying: llama-3.1-8b-instant
+[2026-06-23T18:31:39.435385] [INFO] Success: llama-3.1-8b-instant
+[2026-06-23T18:31:39.435848] [INFO] Built: api/affiliate.py
+[2026-06-23T18:31:39.436657] [INFO] === Done | Built: 1 | Phase: business ===
