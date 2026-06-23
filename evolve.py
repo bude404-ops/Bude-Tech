@@ -18,7 +18,6 @@ LOG_PATH = os.path.join(REPO_ROOT, "system", "evolution.log")
 QUEUE_PATH = os.path.join(REPO_ROOT, "system", "queue.json")
 GITHUB_REPO = "bude404-ops/Bude-Tech"
 
-# Groq free tier: 6,000 tokens/min, 14,400 req/day
 GROQ_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
@@ -28,16 +27,14 @@ GROQ_MODELS = [
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 MAX_PROMPT_CHARS = 12000
-MAX_LOG_LINES = 50  # Auto-cleanup: keep only last 50 lines
+MAX_LOG_LINES = 50
 
-# LOCKED — never modify
 PROTECTED_FILES = [
     "dashboard.js",
     "style.css",
     "index.html",
 ]
 
-# Prevent duplicate creation
 EXISTING_PATTERNS = [
     "new_",
     "_requirements.txt",
@@ -54,7 +51,6 @@ def log_event(msg, level="INFO"):
     print(entry.strip())
 
 def cleanup_logs():
-    """Keep only last MAX_LOG_LINES lines of evolution.log to prevent bloat."""
     if not os.path.exists(LOG_PATH):
         return
     try:
@@ -63,7 +59,6 @@ def cleanup_logs():
         if len(lines) > MAX_LOG_LINES:
             with open(LOG_PATH, "w") as f:
                 f.writelines(lines[-MAX_LOG_LINES:])
-            # Don't log this or it creates a loop — just print
             print(f"[CLEANUP] Trimmed evolution.log to {MAX_LOG_LINES} lines")
     except Exception as e:
         print(f"[CLEANUP] Error: {e}")
@@ -116,7 +111,6 @@ def get_repo_state():
     return files
 
 def determine_phase(memory, files):
-    """Auto-detect phase based on what exists."""
     core_modules = [
         "agents/coder_agent.py",
         "agents/researcher_agent.py",
@@ -132,7 +126,6 @@ def determine_phase(memory, files):
     return "build"
 
 def build_phase_prompt(memory, files):
-    """Prompt for BUILD phase — create core modules."""
     missing = [
         "agents/coder_agent.py — writes and fixes code",
         "agents/researcher_agent.py — gathers information from APIs",
@@ -160,7 +153,6 @@ RULES:
 """
 
 def business_phase_prompt(memory, files):
-    """Prompt for BUSINESS phase — money-making features."""
     opportunities = [
         "api/freelance.py — scan freelance platforms for AI coding gigs",
         "api/crypto_signals.py — generate trading signals (simulation only)",
@@ -353,7 +345,6 @@ def clean_json_response(raw):
     return cleaned.strip()
 
 def main():
-    # AUTO-CLEANUP: Trim logs before starting
     cleanup_logs()
     
     memory = load_memory()
@@ -389,6 +380,16 @@ def main():
             raise
         
         created, upgrades = apply_changes(result, memory)
+        
+        # SKIP if nothing was built — prevents empty commits
+        if len(created) == 0:
+            log_event("No files created. Skipping commit.")
+            memory["evolution_cycles"] = memory.get("evolution_cycles", 0) + 1
+            memory["last_cycle"] = datetime.utcnow().isoformat()
+            memory["last_model_used"] = used_model
+            memory["errors"] = []
+            save_memory(memory)
+            return
         
         new_tasks = result.get("new_tasks", [])
         completed_tasks = result.get("tasks_completed", [])
