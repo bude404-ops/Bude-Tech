@@ -49,7 +49,7 @@ header h1 {
     border-color: #ff4444;
 }
 
-/* AUTO WORK BAR */
+/* AUTO WORK */
 .auto-work-bar {
     display: flex;
     align-items: center;
@@ -106,17 +106,17 @@ header h1 {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1rem;
-    flex-wrap: wrap;
 }
 
 .tab-btn {
+    flex: 1;
     background: #001a0d;
     color: #00ff88;
     border: 1px solid #00ff88;
-    padding: 0.6rem 1.2rem;
+    padding: 0.8rem;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 1rem;
     transition: all 0.2s;
 }
 
@@ -139,6 +139,7 @@ header h1 {
     display: block;
 }
 
+/* PANEL */
 .panel {
     background: #0d0d1a;
     border: 1px solid #00ff88;
@@ -212,72 +213,6 @@ header h1 {
     font-family: inherit;
     font-weight: bold;
     cursor: pointer;
-}
-
-/* STATUS GRID */
-#status-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.status-card {
-    background: #0a0a0f;
-    border: 1px solid #00ff88;
-    padding: 1rem;
-    border-radius: 4px;
-}
-
-.status-card h3 {
-    font-size: 0.85rem;
-    opacity: 0.7;
-    margin-bottom: 0.5rem;
-}
-
-.status-card .value {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-/* TASKS */
-#task-list {
-    list-style: none;
-}
-
-#task-list li {
-    padding: 0.8rem;
-    margin-bottom: 0.5rem;
-    background: #0a0a0f;
-    border-left: 3px solid #00ff88;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#task-list li.done {
-    border-left-color: #444;
-    opacity: 0.5;
-}
-
-.task-toggle {
-    background: none;
-    border: 1px solid #00ff88;
-    color: #00ff88;
-    padding: 0.3rem 0.8rem;
-    cursor: pointer;
-    font-family: inherit;
-}
-
-/* MEMORY */
-pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    background: #0a0a0f;
-    padding: 1rem;
-    border-radius: 4px;
-    overflow-x: auto;
-    font-size: 0.85rem;
-    line-height: 1.5;
 }
 
 /* EVOLUTION STORY */
@@ -413,13 +348,6 @@ pre {
 
 /* MOBILE */
 @media (max-width: 600px) {
-    .tabs {
-        justify-content: center;
-    }
-    .tab-btn {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.8rem;
-    }
     .chat-box {
         height: 300px;
     }
@@ -429,6 +357,5 @@ pre {
     }
     .story-progress label {
         width: 80px;
-        font-size: 0.75rem;
     }
 }
