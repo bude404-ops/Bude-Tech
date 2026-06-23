@@ -1,6 +1,4 @@
 import pandas as pd
-# Generate trading signals using historical data
+# Generate trading signals (simulation only)
 # Track potential earnings in code comments
-# Use free APIs only
-# Output valid JSON
-# ...
+# Never execute real transactions
