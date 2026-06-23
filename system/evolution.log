@@ -358,3 +358,11 @@
 [2026-06-23T18:36:01.375471] [INFO] Success: llama-3.1-8b-instant
 [2026-06-23T18:36:01.375850] [INFO] Built: api/tracking_signals.py
 [2026-06-23T18:36:01.376540] [INFO] === Done | Built: 1 | Phase: business ===
+[2026-06-23T18:36:24.850299] [INFO] === BudE | Phase: business | Focus: general ===
+[2026-06-23T18:36:24.852203] [INFO] Prompt: 3721 chars
+[2026-06-23T18:36:24.852258] [INFO] Trying: llama-3.3-70b-versatile
+[2026-06-23T18:36:24.982181] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat
+[2026-06-23T18:36:24.982889] [INFO] Trying: llama-3.1-8b-instant
+[2026-06-23T18:36:25.386668] [INFO] Success: llama-3.1-8b-instant
+[2026-06-23T18:36:25.387067] [INFO] Built: api/tracking_signals.py
+[2026-06-23T18:36:25.387785] [INFO] === Done | Built: 1 | Phase: business ===

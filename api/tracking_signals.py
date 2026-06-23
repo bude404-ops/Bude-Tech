@@ -1,8 +1,14 @@
 import requests
-# Track affiliate link performance
-# Use free APIs only
-# Track potential earnings in code comments
-# Never execute real transactions
-def track_signals():
-    # TODO: implement tracking logic
-    pass
+
+# Define a function to track affiliate link performance
+def track_affiliate_performance(link):
+    try:
+        response = requests.get(link)
+        return response.status_code
+    except requests.RequestException as e:
+        return None
+
+# Example usage
+link = "https://example.com/affiliate/link"
+performance = track_affiliate_performance(link)
+print(performance)
