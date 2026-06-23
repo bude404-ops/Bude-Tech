@@ -1,1 +1,2 @@
-modular agent implementation
+import os
+# TODO: implement modular agent
