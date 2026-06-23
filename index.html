@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudE OS Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>BudE OS v0.2</h1>
+            <div class="status" id="system-status">Checking...</div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="switchTab('chat')">Chat</button>
+            <button class="tab-btn" onclick="switchTab('status')">System Status</button>
+            <button class="tab-btn" onclick="switchTab('memory')">Memory</button>
+            <button class="tab-btn" onclick="switchTab('tasks')">Tasks</button>
+            <button class="tab-btn" onclick="switchTab('evolution')">Evolution Log</button>
+        </nav>
+
+        <main>
+            <section id="chat" class="tab-content active">
+                <div class="chat-box" id="chat-box"></div>
+                <div class="chat-input">
+                    <input type="text" id="chat-message" placeholder="Message BudE..." onkeypress="if(event.key==='Enter')sendMessage()">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </section>
+
+            <section id="status" class="tab-content">
+                <div class="panel">
+                    <h2>System Status</h2>
+                    <div id="status-grid"></div>
+                </div>
+            </section>
+
+            <section id="memory" class="tab-content">
+                <div class="panel">
+                    <h2>Memory Viewer</h2>
+                    <pre id="memory-display">Loading...</pre>
+                </div>
+            </section>
+
+            <section id="tasks" class="tab-content">
+                <div class="panel">
+                    <h2>Task List</h2>
+                    <ul id="task-list"></ul>
+                </div>
+            </section>
+
+            <section id="evolution" class="tab-content">
+                <div class="panel">
+                    <h2>Evolution Log</h2>
+                    <pre id="evolution-display">Loading...</pre>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
