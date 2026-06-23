@@ -1,3 +1,4 @@
-import random
-# generate blog/social content
-# track potential earnings: $500/day
+import nltk
+# Generate blog/social content
+# Use free APIs only
+# Track potential earnings in code comments
