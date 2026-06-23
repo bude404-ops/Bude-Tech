@@ -342,3 +342,11 @@
 [2026-06-23T18:31:39.435385] [INFO] Success: llama-3.1-8b-instant
 [2026-06-23T18:31:39.435848] [INFO] Built: api/affiliate.py
 [2026-06-23T18:31:39.436657] [INFO] === Done | Built: 1 | Phase: business ===
+[2026-06-23T18:35:30.146020] [INFO] === BudE | Phase: business | Focus: general ===
+[2026-06-23T18:35:30.147785] [INFO] Prompt: 3660 chars
+[2026-06-23T18:35:30.147845] [INFO] Trying: llama-3.3-70b-versatile
+[2026-06-23T18:35:30.237361] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat
+[2026-06-23T18:35:30.237913] [INFO] Trying: llama-3.1-8b-instant
+[2026-06-23T18:35:30.704114] [INFO] Success: llama-3.1-8b-instant
+[2026-06-23T18:35:30.704524] [INFO] Built: tools/content_generator.py
+[2026-06-23T18:35:30.705181] [INFO] === Done | Built: 1 | Phase: business ===
