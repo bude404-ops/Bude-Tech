@@ -1,22 +1,27 @@
 import os
 import smtplib
-from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # Email configuration
-EMAIL_ADDRESS = 'your_email@gmail.com'
-EMAIL_PASSWORD = 'your_password'
+SMTP_SERVER = 'smtp.gmail.com'
+SMTP_PORT = 587
+FROM_EMAIL = 'your-email@gmail.com'
+PASSWORD = 'your-password'
 
-def send_newsletter(subscribers):
-    msg = EmailMessage()
-    msg.set_content('Daily Newsletter')
-    msg['Subject'] = 'Daily Newsletter'
-    msg['From'] = EMAIL_ADDRESS
-    msg['To'] = subscribers
+def send_email(recipient, subject, body):
+    msg = MIMEMultipart()
+    msg['From'] = FROM_EMAIL
+    msg['To'] = recipient
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        smtp.send_message(msg)
+    server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+    server.starttls()
+    server.login(FROM_EMAIL, PASSWORD)
+    text = msg.as_string()
+    server.sendmail(FROM_EMAIL, recipient, text)
+    server.quit()
 
 # Example usage
-subscribers = ['subscriber1@example.com', 'subscriber2@example.com']
-send_newsletter(subscribers)
+send_email('recipient-email@gmail.com', 'Daily Newsletter', 'Hello, this is your daily newsletter.')
