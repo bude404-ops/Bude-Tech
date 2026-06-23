@@ -1,12 +1,3 @@
-[2026-06-23T21:20:14.816938] [INFO] Trying: llama-3.1-8b-instant
-[2026-06-23T21:20:15.492225] [INFO] Success: llama-3.1-8b-instant
-[2026-06-23T21:20:15.492644] [INFO] Built: api/stripe_payments.py
-[2026-06-23T21:20:15.492773] [INFO] Built: landing_page/index.html
-[2026-06-23T21:20:15.493102] [INFO] === Done | Built: 2 | Phase: business | Revenue: $0.00 ===
-[2026-06-23T21:29:41.379568] [INFO] === BudE | Phase: business | Focus: money ===
-[2026-06-23T21:29:41.380906] [INFO] Prompt: 4526 chars
-[2026-06-23T21:29:41.380960] [INFO] Trying: llama-3.3-70b-versatile
-[2026-06-23T21:29:41.493361] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
 [2026-06-23T21:29:41.494334] [INFO] Trying: llama-3.1-8b-instant
 [2026-06-23T21:29:42.256694] [INFO] Success: llama-3.1-8b-instant
 [2026-06-23T21:29:42.257158] [INFO] Built: landing_page/index.html
@@ -57,3 +48,12 @@
 [2026-06-23T21:42:30.131101] [INFO] Built: api/email_sender.py
 [2026-06-23T21:42:30.131226] [INFO] Built: landing_page/index.html
 [2026-06-23T21:42:30.131592] [INFO] === Done | Built: 2 | Phase: business | Revenue: 0.0000 SOL ===
+[2026-06-23T21:43:00.421993] [INFO] === BudE | Phase: business | Focus: money ===
+[2026-06-23T21:43:00.423342] [INFO] Prompt: 4509 chars
+[2026-06-23T21:43:00.423401] [INFO] Trying: llama-3.3-70b-versatile
+[2026-06-23T21:43:00.498205] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+[2026-06-23T21:43:00.499016] [INFO] Trying: llama-3.1-8b-instant
+[2026-06-23T21:43:01.654514] [INFO] Success: llama-3.1-8b-instant
+[2026-06-23T21:43:01.654993] [INFO] Built: landing_page/index.html
+[2026-06-23T21:43:01.655132] [INFO] Built: api/solana_payment_handler.py
+[2026-06-23T21:43:01.655498] [INFO] === Done | Built: 2 | Phase: business | Revenue: 0.0000 SOL ===
