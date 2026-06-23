@@ -1,3 +1,4 @@
-import pandas as pd
+import random
 # Generate trading signals (simulation only)
-# Potential earnings: $1000/month
+# Track potential earnings in code comments
+# Use free APIs only
