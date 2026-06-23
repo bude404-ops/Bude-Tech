@@ -1,14 +1,38 @@
 import solana_pay
+from solana.publickey import PublicKey
+from solana.rpc.api import Client
 
-def generate_solana_pay_link(wallet_address, amount):
-    return f'https://solana-pay.com/v1/subscribe?wallet={wallet_address}&amount={amount}'
+# Set the Solana wallet address
+wallet_address = PublicKey('AnJDRjTaxtRbqYazSkRjLm1Y2jSfuCmHJhygKiNyrKmx')
 
-def verify_transaction(tx_id):
-    # Implement Solana RPC or Helius API transaction verification here
-    pass
+# Set the Solana Pay button ID
+button_id = 'subscribe-button'
 
-# Example usage
-wallet_address = 'AnJDRjTaxtRbqYazSkRjLm1Y2jSfuCmHJhygKiNyrKmx'
-amount = 0.05
-link = generate_solana_pay_link(wallet_address, amount)
-print(link)
+# Create a Solana Pay button
+def create_solana_pay_button():
+    pay_button = solana_pay.Button(button_id, wallet_address)
+    return pay_button
+
+# Handle subscription requests
+def handle_subscription_request(request):
+    # Verify the subscription request
+    if request['signature']:
+        # Process the subscription
+        print('Subscription successful!')
+    else:
+        # Handle error
+        print('Error subscribing:', request['error'])
+
+# Start the Solana Pay server
+def start_solana_pay_server():
+    # Create a Solana Pay server
+    server = solana_pay.Server()
+    # Start the server
+    server.start()
+
+# Start the Solana Pay button
+def start_solana_pay_button():
+    # Create a Solana Pay button
+    pay_button = create_solana_pay_button()
+    # Start the button
+    pay_button.start()
