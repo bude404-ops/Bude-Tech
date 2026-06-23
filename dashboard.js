@@ -390,6 +390,11 @@ async function fetchText(path) {
 
 // ─── INIT ───
 document.addEventListener('DOMContentLoaded', () => {
+    // Set status immediately, don't wait for fetch
+    const statusEl = document.getElementById('system-status');
+    statusEl.textContent = 'ONLINE';
+    statusEl.className = 'status online';
+    
     addChatMsg('bude', `BudE OS v0.3 online. Repo: ${GITHUB_FULL}.`);
     addChatMsg('bude', 'Tap AUTO WORK to evolve, or type /help.');
 });
