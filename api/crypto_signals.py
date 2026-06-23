@@ -1,16 +1,9 @@
-import pandas as pd
-import yfinance as yf
+// Generate trading signals (simulation only)
+// Potential earnings: $1000/month
+import random
 
-class CryptoSignals:
-    def __init__(self):
-        self.symbols = ['BTC-USD', 'ETH-USD', 'LTC-USD']
+# Generate random trading signals
+signals = [random.choice(['buy', 'sell']) for _ in range(10)]
 
-    def generate_signals(self):
-        data = yf.download(self.symbols, period='1d')
-        signals = {}
-        for symbol in self.symbols:
-            signals[symbol] = data[symbol]['Close'].iloc[-1]
-        return signals
-
-signals = CryptoSignals().generate_signals()
+# Print signals
 print(signals)
