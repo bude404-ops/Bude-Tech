@@ -1,18 +1,25 @@
 import os
 import smtplib
-from email.message import EmailMessage
-from solana.publickey import PublicKey
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
-# Solana wallet address
-WALLET_ADDRESS = 'AnJDRjTaxtRbqYazSkRjLm1Y2jSfuCmHJhygKiNyrKmx'
+# Email credentials
+EMAIL_ADDRESS = 'your_email@gmail.com'
+EMAIL_PASSWORD = 'your_password'
 
-def send_newsletter(subscribers):
-    msg = EmailMessage()
-    msg.set_content('Daily Crypto Signals Newsletter')
-    msg['Subject'] = 'Daily Crypto Signals Newsletter'
-    msg['From'] = 'your_email@gmail.com'
-    msg['To'] = subscribers
+def send_email(subject, body, to):
+    msg = MIMEMultipart()
+    msg['From'] = EMAIL_ADDRESS
+    msg['To'] = to
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login('your_email@gmail.com', 'your_password')
-        smtp.send_message(msg)
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+    text = msg.as_string()
+    server.sendmail(EMAIL_ADDRESS, to, text)
+    server.quit()
+
+# Example usage
+send_email('Daily Newsletter', 'Hello, this is your daily newsletter.', 'recipient@example.com')

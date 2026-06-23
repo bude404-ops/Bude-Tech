@@ -1,10 +1,18 @@
 import json
+import os
 
-# Load subscribers from system/revenue.json
-with open('system/revenue.json', 'r') as f:
-    revenue_data = json.load(f)
+# Load subscribers from Solana wallet
+def load_subscribers(wallet_address):
+    subscribers = {}
+    # Load subscribers from Solana wallet
+    # ... implement Solana wallet API call ...
+    return subscribers
 
-# Get the list of subscribers
-subscribers = revenue_data['subscribers']
+# Save subscribers to Solana wallet
+def save_subscribers(subscribers, wallet_address):
+    # Save subscribers to Solana wallet
+    # ... implement Solana wallet API call ...
 
-# TO DO: implement subscriber management logic
+# Example usage
+subscribers = load_subscribers('AnJDRjTaxtRbqYazSkRjLm1Y2jSfuCmHJhygKiNyrKmx')
+print(subscribers)
