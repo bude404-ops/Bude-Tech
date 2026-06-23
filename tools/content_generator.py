@@ -1,3 +1,3 @@
 import random
-# generate blog/social content
-# track potential earnings: $500
+# Generate blog/social content
+# Track potential earnings: $500
