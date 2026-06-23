@@ -1,4 +1,4 @@
 import pandas as pd
-# Generate trading signals (simulation only)
+# Generate trading signals using free APIs
 # Track potential earnings in code comments
-# Use free APIs only
+# Never execute real transactions
