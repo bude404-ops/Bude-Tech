@@ -41,6 +41,53 @@ EXISTING_PATTERNS = [
     "copy_of_",
     "backup_",
 ]
+def self_heal():
+    """Read last error and attempt to fix it."""
+    if not os.path.exists(LOG_PATH):
+        return
+    
+    try:
+        with open(LOG_PATH, "r") as f:
+            lines = f.readlines()
+        
+        # Find last error
+        last_error = None
+        for line in reversed(lines):
+            if "[ERROR]" in line:
+                last_error = line
+                break
+        
+        if not last_error:
+            return
+        
+        # Check if it's a known error pattern
+        if "JSON parse error" in last_error:
+            log_event("SELF-HEAL: Detected JSON parse issue, will simplify prompt", "HEAL")
+            return "simplify_json"
+        elif "All models failed" in last_error:
+            log_event("SELF-HEAL: Detected model failure, will retry with fallback", "HEAL")
+            return "retry_models"
+        elif "No files created" in last_error:
+            log_event("SELF-HEAL: Detected empty cycle, will expand prompt", "HEAL")
+            return "expand_prompt"
+        
+    except Exception as e:
+        log_event(f"SELF-HEAL failed: {e}", "WARN")
+
+# Call in main():
+def main():
+    cleanup_logs()
+    heal_action = self_heal()
+    
+    # Adjust behavior based on heal action
+    if heal_action == "simplify_json":
+        global MAX_PROMPT_CHARS
+        MAX_PROMPT_CHARS = 8000  # Shorter prompts
+    elif heal_action == "expand_prompt":
+        global MAX_PROMPT_CHARS
+        MAX_PROMPT_CHARS = 15000  # More context
+    
+    # ... rest of main
 
 def log_event(msg, level="INFO"):
     ts = datetime.utcnow().isoformat()
