@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-BudE Evolution Engine v0.4
+BudE Evolution Engine v0.5
 Repo: https://github.com/bude404-ops/Bude-Tech
-Phased evolution: BUILD → BUSINESS
-Dashboard LOCKED | Auto-log-cleanup enabled | Simple chat interface
+Phased evolution: BUILD → BUSINESS → REVENUE
+Dashboard LOCKED | Auto-log-cleanup enabled | Simple chat interface | Revenue tracker
 """
 
 import os
@@ -18,6 +18,7 @@ LOG_PATH = os.path.join(REPO_ROOT, "system", "evolution.log")
 QUEUE_PATH = os.path.join(REPO_ROOT, "system", "queue.json")
 CHAT_PATH = os.path.join(REPO_ROOT, "system", "chat.txt")
 CHAT_LOG_PATH = os.path.join(REPO_ROOT, "system", "chat.log")
+REVENUE_PATH = os.path.join(REPO_ROOT, "system", "revenue.json")
 GITHUB_REPO = "bude404-ops/Bude-Tech"
 
 GROQ_MODELS = [
@@ -67,6 +68,41 @@ def log_chat_response(user_msg, bot_response):
     os.makedirs(os.path.dirname(CHAT_LOG_PATH), exist_ok=True)
     with open(CHAT_LOG_PATH, "a", encoding="utf-8") as f:
         f.write(entry)
+
+# --- REVENUE TRACKER ---
+
+def load_revenue():
+    """Load revenue tracking data."""
+    if os.path.exists(REVENUE_PATH):
+        with open(REVENUE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {
+        "total_earned_usd": 0,
+        "total_earned_crypto": 0,
+        "subscriptions": {
+            "free_tier": 0,
+            "paid_monthly": 0,
+            "paid_yearly": 0
+        },
+        "products": {
+            "crypto_newsletter": {
+                "price_monthly": 9.99,
+                "price_yearly": 99.99,
+                "subscribers": 0,
+                "revenue": 0
+            }
+        },
+        "affiliate_earnings": 0,
+        "freelance_earnings": 0,
+        "last_updated": datetime.utcnow().isoformat()
+    }
+
+def save_revenue(rev):
+    """Save revenue tracking data."""
+    os.makedirs(os.path.dirname(REVENUE_PATH), exist_ok=True)
+    rev["last_updated"] = datetime.utcnow().isoformat()
+    with open(REVENUE_PATH, "w", encoding="utf-8") as f:
+        json.dump(rev, f, indent=2)
 
 # --- SELF-HEAL ---
 
@@ -148,6 +184,29 @@ def save_memory(mem):
     with open(MEMORY_PATH, "w", encoding="utf-8") as f:
         json.dump(mem, f, indent=2)
 
+def cleanup_memory(memory):
+    """Remove duplicate tasks and limit memory size to prevent prompt bloat."""
+    # Remove duplicate tasks (same text)
+    seen = set()
+    unique_tasks = []
+    for task in memory.get("tasks", []):
+        text = task.get("text", "")
+        if text and text not in seen:
+            seen.add(text)
+            unique_tasks.append(task)
+    
+    # Limit to 20 most recent tasks
+    memory["tasks"] = unique_tasks[-20:]
+    
+    # Deduplicate modules_built
+    memory["modules_built"] = list(dict.fromkeys(memory.get("modules_built", [])))
+    memory["business_modules"] = list(dict.fromkeys(memory.get("business_modules", [])))
+    
+    # Limit upgrades_made to last 10
+    memory["upgrades_made"] = memory.get("upgrades_made", [])[-10:]
+    
+    return memory
+
 # --- QUEUE ---
 
 def process_queue():
@@ -222,30 +281,36 @@ RULES:
 """
 
 def business_phase_prompt(memory, files):
+    """Revenue-focused business phase — only build money-making components."""
     opportunities = [
-        "api/freelance.py — scan freelance platforms for AI coding gigs",
-        "api/crypto_signals.py — generate trading signals (simulation only)",
-        "tools/content_generator.py — generate blog/social content",
-        "api/affiliate.py — track affiliate link performance",
-        "tools/saas_builder.py — build micro-SaaS tools",
-        "api/price_tracker.py — track API pricing, find cheapest options",
+        "api/stripe_payments.py — collect subscription payments via Stripe",
+        "api/email_sender.py — send daily newsletters to paid subscribers",
+        "landing_page/index.html — sales page for crypto newsletter",
+        "api/subscriber_manager.py — track free vs paid users",
+        "api/revenue_tracker.py — log all income and report earnings",
     ]
     built_biz = memory.get("business_modules", [])
     missing = [o for o in opportunities if not any(b in o for b in built_biz)]
+    
+    revenue = load_revenue()
+    
     return f"""
-PHASE: BUSINESS (Money Making)
+PHASE: BUSINESS (Revenue Generation)
 Core modules: ✅ DONE
-Business modules: {len(built_biz)}/6
+Business modules: {len(built_biz)}/5
+Current revenue: ${revenue['total_earned_usd']:.2f} USD
 
-OPPORTUNITIES — build ONE per cycle:
+REVENUE OPPORTUNITIES — build ONE per cycle:
 {chr(10).join(missing[:3])}
 
-RULES:
-- Create ONE revenue-oriented tool per cycle
-- NO duplicates
-- Use free APIs only
+CRITICAL RULES:
+- Create ONE revenue-generating file per cycle
+- Every file must either: collect money, deliver product, or get customers
+- NO more internal tools unless they directly make money
 - Track potential earnings in code comments
-- Never execute real transactions
+- Update system/revenue.json when money flows
+- Never execute real transactions in test mode
+- Build landing page FIRST — you need a way to sell before you can collect
 """
 
 # --- PROMPT BUILDER ---
@@ -302,6 +367,14 @@ If they want you to build something, build it. If they want info, tell them. If 
 Always reply in the "chat_response" field. Build files when needed.
 """
     
+    revenue = load_revenue()
+    revenue_section = f"""
+REVENUE STATUS:
+- Total earned: ${revenue['total_earned_usd']:.2f} USD
+- Newsletter subscribers: {revenue['products']['crypto_newsletter']['subscribers']}
+- Newsletter revenue: ${revenue['products']['crypto_newsletter']['revenue']:.2f}
+"""
+    
     prompt = f"""You are BudE evolution engine.
 Repo: {GITHUB_REPO}
 
@@ -315,6 +388,7 @@ MEMORY:
 {json.dumps(mem_summary)}
 
 {phase_prompt}
+{revenue_section}
 {chat_section}
 
 STRICT RULES:
@@ -322,6 +396,8 @@ STRICT RULES:
 - You can upgrade: evolve.py, brain.md, agents/*, api/*, tools/*, system/*
 - Fix bugs, add features, improve everything else
 - Output ONLY valid JSON
+- NEVER add duplicate tasks to memory
+- ALWAYS clean up memory before saving
 
 JSON FORMAT:
 {{
@@ -417,12 +493,14 @@ def apply_changes(result, memory):
         created.append(path)
         log_event(f"Built: {path}")
         
-        if "business" in path or "freelance" in path or "saas" in path:
+        if "business" in path or "freelance" in path or "saas" in path or "stripe" in path or "landing" in path:
             memory["business_modules"] = memory.get("business_modules", [])
-            memory["business_modules"].append(path)
+            if path not in memory["business_modules"]:
+                memory["business_modules"].append(path)
         elif "agents/" in path or "api/" in path or "tools/" in path:
             memory["modules_built"] = memory.get("modules_built", [])
-            memory["modules_built"].append(path)
+            if path not in memory["modules_built"]:
+                memory["modules_built"].append(path)
     
     return created, upgrades
 
@@ -450,6 +528,9 @@ def main():
         MAX_PROMPT_CHARS = 15000
     
     memory = load_memory()
+    memory = cleanup_memory(memory)
+    save_memory(memory)
+    
     log_event(f"=== BudE | Phase: {memory.get('phase', 'build')} | Focus: {memory.get('current_focus', 'general')} ===")
     
     if not GROQ_API_KEY:
@@ -509,14 +590,23 @@ def main():
             save_memory(memory)
             return
         
+        # Clean up new tasks before adding
         new_tasks = result.get("new_tasks", [])
+        # Remove duplicates from new_tasks
+        new_tasks = list(dict.fromkeys(new_tasks))
+        
         completed_tasks = result.get("tasks_completed", [])
         current_tasks = memory.get("tasks", [])
         current_tasks = [t for t in current_tasks if t["text"] not in completed_tasks]
-        for nt in new_tasks:
-            current_tasks.append({"id": len(current_tasks)+1, "text": nt, "done": False})
         
-        memory["tasks"] = current_tasks
+        for nt in new_tasks:
+            # Only add if not already in tasks
+            if not any(t.get("text") == nt for t in current_tasks):
+                current_tasks.append({"id": len(current_tasks)+1, "text": nt, "done": False})
+        
+        # Limit tasks again after adding
+        memory["tasks"] = current_tasks[-20:]
+        
         memory["evolution_cycles"] = memory.get("evolution_cycles", 0) + 1
         memory["last_cycle"] = datetime.utcnow().isoformat()
         memory["last_model_used"] = used_model
@@ -528,11 +618,16 @@ def main():
                 "time": datetime.utcnow().isoformat(),
                 "files": upgrades
             })
+            # Keep only last 10
+            memory["upgrades_made"] = memory["upgrades_made"][-10:]
+        
+        # Final memory cleanup before save
+        memory = cleanup_memory(memory)
         
         memory["errors"] = []
         save_memory(memory)
         
-        log_event(f"=== Done | Built: {len(created)} | Phase: {memory.get('phase', 'build')} ===")
+        log_event(f"=== Done | Built: {len(created)} | Phase: {memory.get('phase', 'build')} | Revenue: ${load_revenue()['total_earned_usd']:.2f} ===")
         
     except Exception as e:
         log_event(f"Failed: {e}", "ERROR")
