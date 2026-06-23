@@ -1,4 +1,4 @@
-name: BudE Evolution Engine v0.2
+name: BudE Evolution Engine v0.3
 
 on:
   workflow_dispatch:
@@ -14,6 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -30,10 +32,17 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python evolve.py
 
-      - name: Commit changes
+      - name: Commit and push changes
         run: |
           git config user.name "bude-ai"
           git config user.email "bude@ai.system"
           git add .
-          git diff --cached --quiet || git commit -m "BudE evolution cycle update"
-          git push
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "BudE evolution cycle update"
+          git pull --rebase origin main || git pull origin main
+          git push origin main || (sleep 5 && git pull --rebase origin main && git push origin main)
