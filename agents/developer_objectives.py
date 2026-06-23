@@ -1,2 +1,2 @@
 import os
-# developer objectives implementation
+# developer objectives
