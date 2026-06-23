@@ -1,0 +1,4 @@
+# Requirements for Coder Agent
+# Install required libraries
+pip install autopep8
+pip install isort
