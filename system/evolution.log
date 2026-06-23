@@ -1,12 +1,3 @@
-[2026-06-23T18:53:58.367974] [INFO] Trying: llama-3.1-8b-instant
-[2026-06-23T18:53:58.829589] [INFO] Success: llama-3.1-8b-instant
-[2026-06-23T18:53:58.830023] [INFO] Built: tools/trading_signals_generator.py
-[2026-06-23T18:53:58.830187] [INFO] Built: api/tracking_signals.py
-[2026-06-23T18:53:58.830990] [INFO] === Done | Built: 2 | Phase: business ===
-[2026-06-23T18:54:30.455986] [INFO] === BudE | Phase: business | Focus: general ===
-[2026-06-23T18:54:30.457826] [INFO] Prompt: 3817 chars
-[2026-06-23T18:54:30.457890] [INFO] Trying: llama-3.3-70b-versatile
-[2026-06-23T18:54:30.539099] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
 [2026-06-23T18:54:30.540367] [INFO] Trying: llama-3.1-8b-instant
 [2026-06-23T18:54:30.952991] [INFO] Success: llama-3.1-8b-instant
 [2026-06-23T18:54:30.953470] [INFO] Built: tools/trading_signals_generator.py
@@ -57,3 +48,12 @@
 [2026-06-23T19:05:35.888270] [INFO] Built: tools/crypto_signals_generator.py
 [2026-06-23T19:05:35.888430] [INFO] Built: tools/content_generator.py
 [2026-06-23T19:05:35.889253] [INFO] === Done | Built: 2 | Phase: business ===
+[2026-06-23T19:16:11.569265] [INFO] === BudE | Phase: business | Focus: general ===
+[2026-06-23T19:16:11.570236] [INFO] Prompt: 3856 chars
+[2026-06-23T19:16:11.570292] [INFO] Trying: llama-3.3-70b-versatile
+[2026-06-23T19:16:11.703223] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+[2026-06-23T19:16:11.704053] [INFO] Trying: llama-3.1-8b-instant
+[2026-06-23T19:16:12.170364] [INFO] Success: llama-3.1-8b-instant
+[2026-06-23T19:16:12.170737] [INFO] Built: tools/crypto_signals_generator.py
+[2026-06-23T19:16:12.170825] [INFO] Built: tools/content_generator.py
+[2026-06-23T19:16:12.171508] [INFO] === Done | Built: 2 | Phase: business ===
