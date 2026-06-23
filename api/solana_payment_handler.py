@@ -1,20 +1,17 @@
-import solana.rpc.api as solana_rpc
+import solana.publickey as publickey
+import solana.rpc.api as rpc
 from solana.publickey import PublicKey
-from solana.transaction import Transaction
+from solana.rpc.api import RPC
 
-# Set up Solana RPC connection
-rpc_url = 'https://api.devnet.solana.com'
-connection = solana_rpc.cluster(rpc_url)
-
-# Set up wallet address and payment amount
 wallet_address = 'AnJDRjTaxtRbqYazSkRjLm1Y2jSfuCmHJhygKiNyrKmx'
-payment_amount = 0.05
+price = 0.05
 
-# Handle incoming payments
-def handle_payment(payment):    # Verify payment transaction    transaction = payment.transaction
-    # Get payment recipient (wallet address)
-    recipient = transaction.account_data[0]
-    # Check if recipient matches wallet address
-    if recipient == wallet_address:
-        # Process payment (e.g., update subscriber list)
-        print('Payment processed')
+def handle_payment(payment_request):
+    # Verify payment request
+    # Update system/revenue.json
+    pass
+
+def get_wallet_balance():
+    rpc_client = RPC('https://api.devnet.solana.com')
+    balance = rpc_client.get_balance(PublicKey(wallet_address))
+    return balance
