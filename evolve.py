@@ -2,7 +2,7 @@
 """
 BudE Evolution Engine v0.2
 Repo: https://github.com/bude404-ops/Bude-Tech
-100% free — Groq only, truncated prompts to stay within limits
+Dashboard LOCKED — AI cannot modify UI files
 """
 
 import os
@@ -17,8 +17,6 @@ LOG_PATH = os.path.join(REPO_ROOT, "system", "evolution.log")
 QUEUE_PATH = os.path.join(REPO_ROOT, "system", "queue.json")
 GITHUB_REPO = "bude404-ops/Bude-Tech"
 
-# Groq free tier: 6,000 tokens/min, 14,400 req/day
-# Keep prompt under ~3,000 tokens to stay safe
 GROQ_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
@@ -27,9 +25,14 @@ GROQ_MODELS = [
 ]
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-
-# Max prompt size in characters (roughly 3K tokens)
 MAX_PROMPT_CHARS = 12000
+
+# DASHBOARD IS LOCKED
+PROTECTED_FILES = [
+    "dashboard.js",
+    "style.css",
+    "index.html",
+]
 
 def log_event(msg, level="INFO"):
     ts = datetime.utcnow().isoformat()
@@ -49,7 +52,8 @@ def load_memory():
         "errors": [],
         "tasks": [],
         "repo": GITHUB_REPO,
-        "upgrades_made": []
+        "upgrades_made": [],
+        "current_focus": "general"
     }
 
 def save_memory(mem):
@@ -73,7 +77,6 @@ def process_queue():
     return pending
 
 def get_repo_state():
-    """Only list files, don't read contents. Stays within token limits."""
     files = []
     for root, _, filenames in os.walk(REPO_ROOT):
         if ".git" in root:
@@ -84,16 +87,10 @@ def get_repo_state():
     return files
 
 def build_prompt(brain, repo_state, memory, queued):
-    """Build a compact prompt that fits within Groq free tier."""
-    
-    # Truncate brain to essentials
-    brain_summary = brain[:2000] + "\n... [truncated for length]" if len(brain) > 2000 else brain
-    
-    # Compact file list
-    file_list = repo_state[:50]  # Only first 50 files
+    brain_summary = brain[:2000] + "\n... [truncated]" if len(brain) > 2000 else brain
+    file_list = repo_state[:50]
     file_count = len(repo_state)
     
-    # Compact memory
     mem_summary = {
         "cycles": memory.get("evolution_cycles", 0),
         "last": memory.get("last_cycle", "never"),
@@ -101,7 +98,23 @@ def build_prompt(brain, repo_state, memory, queued):
         "errors": len(memory.get("errors", []))
     }
     
-    # Compact queue
+    focus = memory.get("current_focus", "general")
+    for q in queued:
+        if q.get("type") == "focus":
+            focus = q.get("data", "general")
+            memory["current_focus"] = focus
+            save_memory(memory)
+    
+    focus_instruction = ""
+    if focus == "agents":
+        focus_instruction = "\nPRIORITY FOCUS: Build agent modules. Create coder, researcher, architect, crypto agents in agents/ directory."
+    elif focus == "crypto":
+        focus_instruction = "\nPRIORITY FOCUS: Build crypto analysis tools. Solana integration, wallet tracking, market data."
+    elif focus == "self":
+        focus_instruction = "\nPRIORITY FOCUS: Self-upgrade. Improve evolve.py, brain.md, workflow efficiency."
+    elif focus == "bugs":
+        focus_instruction = "\nPRIORITY FOCUS: Fix bugs. Check evolution.log for errors and fix root causes."
+    
     queue_summary = ""
     if queued:
         queue_summary = f"\nQueued: {len(queued)} commands"
@@ -116,24 +129,27 @@ FILES ({file_count} total, showing {len(file_list)}):
 {json.dumps(file_list, indent=2)}
 
 MEMORY:
-{json.dumps(mem_summary)}{queue_summary}
+{json.dumps(mem_summary)}{queue_summary}{focus_instruction}
 
-INSTRUCTIONS:
-- Build missing files from the brain objectives
-- Fix any obvious issues
-- Output ONLY valid JSON with this structure:
+STRICT RULES:
+- DASHBOARD IS LOCKED: Never modify {', '.join(PROTECTED_FILES)}
+- You can upgrade: evolve.py, brain.md, agents/*, api/*, tools/*, system/*
+- Fix bugs, add features, improve everything else
+- Output ONLY valid JSON
+
+JSON structure:
 {{
   "actions": [
-    {{"type": "create_file", "path": "filename", "content": "content"}}
+    {{"type": "create_file", "path": "filename", "content": "complete file content"}}
   ],
   "reasoning": "why",
+  "upgrades_made": ["list of files you upgraded"],
   "new_tasks": ["task1"]
 }}
 
-Keep responses compact. Create one or two files per cycle.
+Keep compact. 1-2 files per cycle.
 """
     
-    # Hard truncate if still too long
     if len(prompt) > MAX_PROMPT_CHARS:
         prompt = prompt[:MAX_PROMPT_CHARS] + "\n... [truncated]\n}"
     
@@ -147,11 +163,11 @@ def call_groq(prompt, model):
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": "You are BudE. Output only valid JSON. Be concise."},
+            {"role": "system", "content": "You are BudE. Dashboard is locked. Output only valid JSON. Be concise."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.4,
-        "max_tokens": 2048  # Reduced from 4096 to stay within limits
+        "max_tokens": 2048
     }
     resp = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=60)
     resp.raise_for_status()
@@ -180,11 +196,17 @@ def apply_changes(result):
     created = []
     for action in result.get("actions", []):
         if action["type"] == "create_file":
-            os.makedirs(os.path.dirname(action["path"]), exist_ok=True)
-            with open(action["path"], "w") as f:
+            path = action["path"]
+            
+            if path in PROTECTED_FILES:
+                log_event(f"BLOCKED dashboard file: {path}")
+                continue
+            
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as f:
                 f.write(action["content"])
-            created.append(action["path"])
-            log_event(f"Created: {action['path']}")
+            created.append(path)
+            log_event(f"Upgraded: {path}")
     return created, upgrades
 
 def clean_json_response(raw):
@@ -198,7 +220,7 @@ def clean_json_response(raw):
     return cleaned.strip()
 
 def main():
-    log_event(f"=== BudE Evolution | {GITHUB_REPO} ===")
+    log_event(f"=== BudE Evolution | {GITHUB_REPO} | DASHBOARD LOCKED ===")
     
     if not GROQ_API_KEY:
         log_event("No GROQ_API_KEY. Aborting.", "ERROR")
@@ -217,7 +239,7 @@ def main():
     repo_state = get_repo_state()
     prompt = build_prompt(brain, repo_state, memory, queued)
     
-    log_event(f"Prompt size: {len(prompt)} chars")
+    log_event(f"Prompt: {len(prompt)} chars")
     
     try:
         raw_response, used_model = try_models(prompt)
@@ -232,7 +254,6 @@ def main():
         
         created, upgrades = apply_changes(result)
         
-        # Update tasks
         new_tasks = result.get("new_tasks", [])
         completed_tasks = result.get("tasks_completed", [])
         current_tasks = memory.get("tasks", [])
@@ -245,10 +266,19 @@ def main():
         memory["last_cycle"] = datetime.utcnow().isoformat()
         memory["last_model_used"] = used_model
         memory["last_reasoning"] = result.get("reasoning", "No reasoning")[:200]
+        
+        if upgrades:
+            memory["upgrades_made"] = memory.get("upgrades_made", [])
+            memory["upgrades_made"].append({
+                "time": datetime.utcnow().isoformat(),
+                "files": upgrades
+            })
+            log_event(f"SELF-UPGRADED: {', '.join(upgrades)}")
+        
         memory["errors"] = []
         save_memory(memory)
         
-        log_event(f"=== Complete | Created: {len(created)} files ===")
+        log_event(f"=== Complete | Upgraded: {len(created)} | Dashboard locked ===")
         
     except Exception as e:
         log_event(f"Evolution failed: {e}", "ERROR")
