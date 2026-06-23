@@ -1,5 +1,5 @@
 import random
 # Generate blog/social content
-# Potential earnings: $1000/month
-# Free API: OpenRouter
-# Track potential earnings in code comments
+def generate_content():
+    # TODO: implement content generation logic
+    return "Content generated"
