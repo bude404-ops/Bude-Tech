@@ -1,11 +1,16 @@
-import solana.rpc.api as solana_rpc
+import os
+from solana.publickey import PublicKey
+from solana.rpc.api import Client
+from solana.system_program import transfer
 
-# Solana Pay link generator
-def generate_solana_pay_link(wallet_address):
-    # Replace with actual Solana Pay link generation logic
-    return f'https://pay.solanabeach.io/{wallet_address}'
+# Solana Pay wallet address
+wallet_address = 'AnJDRjTaxtRbqYazSkRjLm1Y2jSfuCmHJhygKiNyrKmx'
 
-# Verify transactions via Solana RPC
-def verify_transaction(transaction_id):
-    # Replace with actual transaction verification logic
-    return True
+def generate_solana_pay_link():
+    # Generate Solana Pay link
+    link = f'https://pay.solanabeach.io/{wallet_address}'
+    return link
+
+# Generate Solana Pay link
+solana_pay_link = generate_solana_pay_link()
+print(solana_pay_link)

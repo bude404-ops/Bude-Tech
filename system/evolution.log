@@ -1,15 +1,3 @@
-[2026-06-23T21:52:06.093537] [INFO] Built: landing_page/index.html
-[2026-06-23T21:52:06.093931] [INFO] === Done | Built: 2 | Phase: business | Revenue: 0.0000 SOL ===
-[2026-06-23T21:52:44.334983] [INFO] === BudE | Phase: business | Focus: money ===
-[2026-06-23T21:52:44.336400] [INFO] Prompt: 4499 chars
-[2026-06-23T21:52:44.336464] [INFO] Trying: llama-3.3-70b-versatile
-[2026-06-23T21:52:44.430506] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
-[2026-06-23T21:52:44.431388] [INFO] Trying: llama-3.1-8b-instant
-[2026-06-23T21:52:45.330208] [INFO] Success: llama-3.1-8b-instant
-[2026-06-23T21:52:45.330674] [INFO] Built: api/email_sender.py
-[2026-06-23T21:52:45.330812] [INFO] Built: landing_page/index.html
-[2026-06-23T21:52:45.331191] [INFO] === Done | Built: 2 | Phase: business | Revenue: 0.0000 SOL ===
-[2026-06-23T21:53:03.392970] [INFO] === BudE | Phase: business | Focus: money ===
 [2026-06-23T21:53:03.394338] [INFO] Prompt: 4499 chars
 [2026-06-23T21:53:03.394400] [INFO] Trying: llama-3.3-70b-versatile
 [2026-06-23T21:53:03.531747] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
@@ -60,3 +48,14 @@
 [2026-06-23T22:03:05.600772] [INFO] UPDATING: landing_page/index.html
 [2026-06-23T22:03:05.600902] [INFO] Built: landing_page/index.html
 [2026-06-23T22:03:05.601240] [INFO] === Done | Built: 2 | Phase: business | Revenue: 0.0000 SOL ===
+[2026-06-23T22:04:50.914393] [INFO] === BudE | Phase: business | Focus: money ===
+[2026-06-23T22:04:50.915767] [INFO] Prompt: 5041 chars
+[2026-06-23T22:04:50.915819] [INFO] Trying: llama-3.3-70b-versatile
+[2026-06-23T22:04:51.034653] [WARN] llama-3.3-70b-versatile failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+[2026-06-23T22:04:51.034798] [WARN] Rate limited, waiting 30s before next model...
+[2026-06-23T22:05:21.036003] [INFO] Trying: llama-3.1-8b-instant
+[2026-06-23T22:05:21.836057] [INFO] Success: llama-3.1-8b-instant
+[2026-06-23T22:05:21.836448] [INFO] UPDATING: api/solana_payment_handler.py
+[2026-06-23T22:05:21.836623] [INFO] Built: api/solana_payment_handler.py
+[2026-06-23T22:05:21.836669] [INFO] BLOCKED dashboard: index.html
+[2026-06-23T22:05:21.836977] [INFO] === Done | Built: 1 | Phase: business | Revenue: 0.0000 SOL ===
