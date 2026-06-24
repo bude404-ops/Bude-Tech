@@ -1,0 +1,11 @@
+[
+  {
+    "id": "2026-06-24T18:14:58.994687",
+    "task": "Build a real\u2011time data ingestion pipeline that syncs workforce metrics (employee status, task queues, skill sets) into our AI OS for instant access by agents.",
+    "type": "build",
+    "priority": "high",
+    "assigned_to": "builder_1",
+    "status": "done",
+    "result": "fallback"
+  }
+]
