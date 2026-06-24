@@ -1,24 +1,18 @@
-let data = {};
-
-async function loadData() {
-  const state = await fetch('core/state.json').then(r => r.json());
-  const employees = await fetch('core/employees.json').then(r => r.json());
-  const tasks = await fetch('core/tasks.json').then(r => r.json());
-  const activity = await fetch('core/activity.json').then(r => r.json());
-
-  data = { state, employees, tasks, activity };
-  render('home');
-}
-
 function render(tab) {
   const app = document.getElementById("app");
 
   if (tab === "home") {
     app.innerHTML = `
-      <div class="card">
-        <h2>🧠 BudE OS V17</h2>
+      <div class="hero">
+        <h2>🧠 BudE Control Hub</h2>
         <p>Goal: ${data.state.goal}</p>
-        <p>Version: ${data.state.version}</p>
+        <p>Status: ${data.state.paused ? "Paused" : "Active"}</p>
+      </div>
+
+      <div class="card">
+        <h3>⚡ Quick Actions</h3>
+        <button onclick="sendCmd('add optimize system')">Add Task</button>
+        <button onclick="sendCmd('assign builder_1 improve ui')">Assign Task</button>
       </div>
     `;
   }
@@ -26,9 +20,10 @@ function render(tab) {
   if (tab === "team") {
     app.innerHTML = Object.entries(data.employees).map(([k,v]) => `
       <div class="card">
-        <h3>${k}</h3>
-        <p>${v.role}</p>
+        <h3>👷 ${k}</h3>
+        <p><span class="badge">${v.role}</span></p>
         <p>Tasks: ${v.tasks}</p>
+        <button onclick="sendCmd('assign '+k+' new task')">Assign</button>
       </div>
     `).join("");
   }
@@ -37,45 +32,37 @@ function render(tab) {
     app.innerHTML = data.tasks.map(t => `
       <div class="card">
         <h3>${t.task}</h3>
-        <p>Status: ${t.status}</p>
+        <p><span class="badge">${t.status}</span></p>
         <p>Assigned: ${t.assigned_to}</p>
       </div>
     `).join("");
   }
 
   if (tab === "activity") {
-    app.innerHTML = data.activity.map(a => `
+    app.innerHTML = `
       <div class="card">
-        <p>${a.event}</p>
+        <h3>📊 Activity Feed</h3>
       </div>
-    `).join("");
+      ${data.activity.map(a => `
+        <div class="card">
+          <p>• ${a.event}</p>
+        </div>
+      `).join("")}
+    `;
   }
 
   if (tab === "chat") {
     app.innerHTML = `
       <div class="card">
         <h3>💬 Command Center</h3>
-        <input id="cmd" placeholder="add task / assign builder_1 task" />
+        <input id="cmd" style="width:100%;padding:10px;border-radius:10px;border:none;" placeholder="Type command..." />
         <button onclick="send()">Send</button>
       </div>
     `;
   }
 }
 
-async function send() {
-  const cmd = document.getElementById("cmd").value;
-
-  await fetch("core/state.json", {
-    method: "PUT",
-    body: JSON.stringify({ command: cmd })
-  });
-
-  location.reload();
+function sendCmd(cmd) {
+  document.getElementById("cmd").value = cmd;
+  send();
 }
-
-function tab(name) {
-  render(name);
-}
-
-loadData();
-setInterval(loadData, 5000);
