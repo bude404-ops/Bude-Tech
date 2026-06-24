@@ -2,7 +2,7 @@
   "builder_1": {
     "role": "frontend",
     "score": 1.0,
-    "tasks": 3
+    "tasks": 4
   },
   "builder_2": {
     "role": "backend",
