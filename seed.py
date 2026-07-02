@@ -10,44 +10,31 @@ def load_state():
 def save_state(state):
     STATE_PATH.write_text(json.dumps(state, indent=2))
 
-def handle_message(state, msg):
-    text = msg.lower()
+def brain_cycle(state):
+    # simple autonomous decision engine
 
-    if "build" in text:
-        response = "Building product scaffold..."
-        state["active_task"] = "building product"
-        state["logs"].append("Build command received")
-
-    elif "status" in text:
-        response = f"Cycle {state['cycle']} | Task: {state['active_task']} | Revenue: {state['revenue_sol']} SOL"
-
-    elif "sell" in text:
-        response = "Preparing product for sale (Solana-ready structure placeholder)."
-        state["logs"].append("Sell triggered")
-
-    elif "idea" in text:
-        response = "Idea: AI farm profit optimizer SaaS with feed + livestock forecasting."
-
-    else:
-        response = "Command received. Processing through BudE brain."
-
-    return response
-
-def run_chat(user_input):
-    state = load_state()
-
-    state["messages"].append({"role": "user", "content": user_input})
-
-    reply = handle_message(state, user_input)
-
-    state["messages"].append({"role": "bude", "content": reply})
     state["cycle"] += 1
 
+    if state["cycle"] % 3 == 0:
+        state["active_task"] = "Generating product idea"
+        response = "Created new SaaS idea for AI automation tool."
+        state["products"].append("AI SaaS concept v" + str(state["cycle"]))
+
+    else:
+        state["active_task"] = "Idle analysis"
+        response = "Analyzing system performance..."
+
+    state["logs"].append(response)
+    state["messages"].append({"role": "bude", "content": response})
+
+    return state
+
+def run():
+    state = load_state()
+    state = brain_cycle(state)
     save_state(state)
 
-    print("\nBudE:", reply)
+    print("Cycle complete:", state["cycle"])
 
 if __name__ == "__main__":
-    while True:
-        msg = input("You: ")
-        run_chat(msg)
+    run()
