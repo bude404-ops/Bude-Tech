@@ -1,0 +1,14 @@
+{
+  "name": "mios-v26",
+  "version": "26.0.0",
+  "type": "module",
+  "scripts": {
+    "bootstrap": "node bootstrap.js",
+    "backend": "cd backend && npm start",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
