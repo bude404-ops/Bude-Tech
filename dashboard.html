@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BudE CEO v26</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+body{background:#0a0a0f;color:#e0e0e0;padding:16px;max-width:900px;margin:0 auto}
+h1{color:#00ff88;font-size:1.5rem;margin-bottom:8px}
+.sub{color:#888;font-size:0.8rem;margin-bottom:20px}
+.card{background:#12121a;border:1px solid #1a1a2e;border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{color:#00ccff;font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.stat{background:#1a1a2e;padding:12px;border-radius:8px;text-align:center}
+.stat .num{color:#00ff88;font-size:1.5rem;font-weight:bold}
+.stat .label{color:#888;font-size:0.75rem}
+input,textarea,select{background:#1a1a2e;border:1px solid #2a2a3e;color:#e0e0e0;padding:10px 12px;border-radius:8px;width:100%;font-size:0.9rem;margin-bottom:8px}
+button{background:#00ff88;color:#0a0a0f;border:none;padding:10px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;font-size:0.9rem}
+button:hover{background:#00cc6a}
+button.secondary{background:#1a1a2e;color:#00ccff;border:1px solid #2a2a3e}
+button.secondary:hover{background:#2a2a3e}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.pre{background:#0a0a0f;border:1px solid #1a1a2e;border-radius:8px;padding:12px;overflow-x:auto;font-size:0.8rem;max-height:300px;white-space:pre-wrap}
+.msg{padding:8px 12px;border-radius:8px;margin-bottom:8px;font-size:0.85rem}
+.msg.user{background:#1a1a2e;margin-left:20px}
+.msg.ai{background:#0d1f0d;margin-right:20px;border-left:3px solid #00ff88}
+.timestamp{color:#555;font-size:0.7rem;margin-top:4px}
+.tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto}
+.tab{padding:8px 16px;background:#1a1a2e;border-radius:8px;cursor:pointer;font-size:0.85rem;white-space:nowrap}
+.tab.active{background:#00ff88;color:#0a0a0f;font-weight:bold}
+.hidden{display:none}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.status-dot.online{background:#00ff88;box-shadow:0 0 8px #00ff88}
+.status-dot.offline{background:#ff4444}
+.api-input{background:#1a1a2e;border:1px solid #00ff88;color:#00ff88;padding:10px 12px;border-radius:8px;width:100%;font-size:0.85rem;margin-bottom:12px}
+</style>
+</head>
+<body>
+<h1>BudE CEO v26</h1>
+<div class="sub">Self-Evolving AI Operating System</div>
+
+<div class="card">
+<h2>API Endpoint</h2>
+<input class="api-input" id="api-url" value="http://localhost:8000" placeholder="API URL">
+<button onclick="saveApi()" class="secondary">Connect</button>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
+<div class="tab" onclick="showTab('chat')">Chat</div>
+<div class="tab" onclick="showTab('commands')">Commands</div>
+<div class="tab" onclick="showTab('build')">Build</div>
+<div class="tab" onclick="showTab('revenue')">Revenue</div>
+</div>
+
+<div id="dashboard" class="tab-content">
+<div class="card">
+<h2><span class="status-dot online" id="status-dot"></span> System Status</h2>
+<div class="grid">
+<div class="stat"><div class="num" id="cmd-count">0</div><div class="label">Commands</div></div>
+<div class="stat"><div class="num" id="idea-count">0</div><div class="label">Ideas</div></div>
+<div class="stat"><div class="num" id="project-count">0</div><div class="label">Projects</div></div>
+<div class="stat"><div class="num" id="sol-price">--</div><div class="label">SOL Price</div></div>
+</div>
+</div>
+<div class="card">
+<h2>Market</h2>
+<div id="market-data" class="pre">Loading...</div>
+</div>
+<div class="card">
+<h2>Recent Activity</h2>
+<div id="activity-log" class="pre">Loading...</div>
+</div>
+</div>
+
+<div id="chat" class="tab-content hidden">
+<div class="card">
+<h2>BudE Chat</h2>
+<div id="chat-history" style="max-height:400px;overflow-y:auto;margin-bottom:12px;"></div>
+<div class="row">
+<input id="chat-input" placeholder="Ask BudE anything..." onkeypress="if(event.key==='Enter')sendChat()">
+<button onclick="sendChat()" style="width:auto">Send</button>
+</div>
+</div>
+</div>
+
+<div id="commands" class="tab-content hidden">
+<div class="card">
+<h2>Queue Command</h2>
+<select id="cmd-type">
+<option value="create_project">Create Project</option>
+<option value="add_idea">Add Idea</option>
+<option value="build_tool">Build Tool</option>
+<option value="chat">Chat</option>
+</select>
+<input id="cmd-value" placeholder="Value / Description">
+<button onclick="sendCommand()">Queue Command</button>
+</div>
+<div class="card">
+<h2>Command Queue</h2>
+<div id="command-list" class="pre">Loading...</div>
+</div>
+<div class="card">
+<h2>Ideas</h2>
+<div id="idea-list" class="pre">Loading...</div>
+</div>
+</div>
+
+<div id="build" class="tab-content hidden">
+<div class="card">
+<h2>AI Build</h2>
+<select id="build-type">
+<option value="code">Code</option>
+<option value="reasoning">Reasoning</option>
+<option value="fast">Fast</option>
+<option value="chat">Chat</option>
+</select>
+<input id="build-task" placeholder="What should BudE build?">
+<input id="build-filename" placeholder="Filename (e.g. api/my_tool.py)">
+<button onclick="sendBuild()">Build</button>
+</div>
+<div class="card">
+<h2>Build Output</h2>
+<div id="build-output" class="pre">Ready to build...</div>
+</div>
+</div>
+
+<div id="revenue" class="tab-content hidden">
+<div class="card">
+<h2>Revenue Dashboard</h2>
+<div class="grid">
+<div class="stat"><div class="num" id="rev-potential">$0</div><div class="label">Potential Monthly</div></div>
+<div class="stat"><div class="num" id="rev-actual">$0</div><div class="label">Actual</div></div>
+<div class="stat"><div class="num" id="rev-tools">0</div><div class="label">Tools</div></div>
+</div>
+</div>
+<div class="card">
+<h2>Register Tool</h2>
+<input id="tool-name" placeholder="Tool Name">
+<select id="tool-type">
+<option value="saas">SaaS</option>
+<option value="freelance">Freelance</option>
+<option value="crypto_signals">Crypto Signals</option>
+<option value="content_generator">Content</option>
+<option value="affiliate">Affiliate</option>
+</select>
+<button onclick="registerTool()">Register</button>
+</div>
+<div class="card">
+<h2>Tool List</h2>
+<div id="tool-list" class="pre">Loading...</div>
+</div>
+</div>
+
+<script>
+let API = localStorage.getItem('bude_api') || 'http://localhost:8000';
+document.getElementById('api-url').value = API;
+
+function saveApi(){
+  API = document.getElementById('api-url').value.replace(/\/$/,'');
+  localStorage.setItem('bude_api', API);
+  loadState();
+  loadRevenue();
+}
+
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+async function loadState(){
+  try{
+    const r = await fetch(API+'/state');
+    if(!r.ok) throw new Error('API offline');
+    const d = await r.json();
+    document.getElementById('status-dot').className = 'status-dot online';
+    document.getElementById('cmd-count').textContent = d.commands.length;
+    document.getElementById('idea-count').textContent = d.ideas.length;
+    document.getElementById('project-count').textContent = d.projects.length;
+    document.getElementById('sol-price').textContent = d.market.sol_price ? '$'+d.market.sol_price : '--';
+    document.getElementById('market-data').textContent = JSON.stringify(d.market,null,2);
+    document.getElementById('command-list').textContent = d.commands.map(c=>'['+c.status+'] '+c.type+': '+c.value).join('\n') || 'No commands';
+    document.getElementById('idea-list').textContent = d.ideas.map(i=>'- '+i.text).join('\n') || 'No ideas yet';
+    document.getElementById('activity-log').textContent = d.commands.slice(0,10).map(c=>'['+c.created_at+'] '+c.type+': '+c.value).join('\n') || 'No activity';
+  }catch(e){
+    document.getElementById('status-dot').className = 'status-dot offline';
+    console.error(e);
+  }
+}
+
+async function sendCommand(){
+  const type = document.getElementById('cmd-type').value;
+  const value = document.getElementById('cmd-value').value;
+  if(!value) return;
+  await fetch(API+'/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,value})});
+  document.getElementById('cmd-value').value='';
+  loadState();
+}
+
+async function sendChat(){
+  const input = document.getElementById('chat-input');
+  const msg = input.value;
+  if(!msg) return;
+  const hist = document.getElementById('chat-history');
+  hist.innerHTML += '<div class="msg user">'+escapeHtml(msg)+'<div class="timestamp">'+new Date().toLocaleTimeString()+'</div></div>';
+  input.value='';
+  hist.scrollTop = hist.scrollHeight;
+  try{
+    const r = await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+    const d = await r.json();
+    const reply = d.response || d.error || 'No response';
+    hist.innerHTML += '<div class="msg ai">'+escapeHtml(reply)+'<div class="timestamp">'+new Date().toLocaleTimeString()+' '+(d.model||'')+'</div></div>';
+    hist.scrollTop = hist.scrollHeight;
+  }catch(e){
+    hist.innerHTML += '<div class="msg ai" style="border-color:#ff4444">Error: '+escapeHtml(e.message)+'</div>';
+  }
+}
+
+function escapeHtml(text){
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function sendBuild(){
+  const task = document.getElementById('build-task').value;
+  const type = document.getElementById('build-type').value;
+  const filename = document.getElementById('build-filename').value;
+  if(!task) return;
+  document.getElementById('build-output').textContent = 'Building...';
+  try{
+    const r = await fetch(API+'/build',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task,type,filename})});
+    const d = await r.json();
+    document.getElementById('build-output').textContent = d.error ? 'ERROR: '+d.error : 'Built: '+d.file+'\n\nPreview:\n'+d.content_preview;
+  }catch(e){
+    document.getElementById('build-output').textContent = 'Error: '+e.message;
+  }
+}
+
+async function loadRevenue(){
+  try{
+    const r = await fetch(API+'/revenue');
+    const d = await r.json();
+    document.getElementById('rev-potential').textContent = '$'+d.total_potential_monthly;
+    document.getElementById('rev-actual').textContent = '$'+d.total_actual;
+    document.getElementById('rev-tools').textContent = d.tool_count;
+    document.getElementById('tool-list').textContent = JSON.stringify(d.tools,null,2);
+  }catch(e){}
+}
+
+async function registerTool(){
+  const name = document.getElementById('tool-name').value;
+  const type = document.getElementById('tool-type').value;
+  if(!name) return;
+  await fetch(API+'/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'build_tool',value:name,tool_type:type})});
+  document.getElementById('tool-name').value='';
+  loadRevenue();
+}
+
+setInterval(loadState,3000);
+setInterval(loadRevenue,5000);
+loadState();
+loadRevenue();
+</script>
+</body>
+</html>
