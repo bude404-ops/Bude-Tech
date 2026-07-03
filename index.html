@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BudE CEO v26</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+body{background:#0a0a0f;color:#e0e0e0;padding:16px;max-width:900px;margin:0 auto}
+h1{color:#00ff88;font-size:1.5rem;margin-bottom:8px}
+.sub{color:#888;font-size:0.8rem;margin-bottom:20px}
+.card{background:#12121a;border:1px solid #1a1a2e;border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{color:#00ccff;font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.stat{background:#1a1a2e;padding:12px;border-radius:8px;text-align:center}
+.stat .num{color:#00ff88;font-size:1.5rem;font-weight:bold}
+.stat .label{color:#888;font-size:0.75rem}
+input,textarea,select{background:#1a1a2e;border:1px solid #2a2a3e;color:#e0e0e0;padding:10px 12px;border-radius:8px;width:100%;font-size:0.9rem;margin-bottom:8px}
+button{background:#00ff88;color:#0a0a0f;border:none;padding:10px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;font-size:0.9rem}
+button:hover{background:#00cc6a}
+button.secondary{background:#1a1a2e;color:#00ccff;border:1px solid #2a2a3e}
+button.secondary:hover{background:#2a2a3e}
+button.danger{background:#ff4444;color:#fff;border:1px solid #ff6666}
+button.danger:hover{background:#ff6666}
+button.gold{background:#ffaa00;color:#0a0a0f}
+button.gold:hover{background:#ffcc00}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.pre{background:#0a0a0f;border:1px solid #1a1a2e;border-radius:8px;padding:12px;overflow-x:auto;font-size:0.8rem;max-height:300px;white-space:pre-wrap}
+.msg{padding:8px 12px;border-radius:8px;margin-bottom:8px;font-size:0.85rem}
+.msg.user{background:#1a1a2e;margin-left:20px}
+.msg.ai{background:#0d1f0d;margin-right:20px;border-left:3px solid #00ff88}
+.timestamp{color:#555;font-size:0.7rem;margin-top:4px}
+.tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto}
+.tab{padding:8px 16px;background:#1a1a2e;border-radius:8px;cursor:pointer;font-size:0.85rem;white-space:nowrap}
+.tab.active{background:#00ff88;color:#0a0a0f;font-weight:bold}
+.hidden{display:none}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.status-dot.online{background:#00ff88;box-shadow:0 0 8px #00ff88}
+.status-dot.offline{background:#ff4444}
+.status-dot.busy{background:#ffaa00;box-shadow:0 0 8px #ffaa00}
+.api-input{background:#1a1a2e;border:1px solid #00ff88;color:#00ff88;padding:10px 12px;border-radius:8px;width:100%;font-size:0.85rem;margin-bottom:12px}
+.config-row{display:flex;gap:8px;margin-bottom:8px}
+.config-row input{flex:1}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a2e;border:1px solid #00ff88;color:#00ff88;padding:12px 16px;border-radius:8px;font-size:0.85rem;z-index:1000;animation:slideIn 0.3s ease}
+.toast.error{border-color:#ff4444;color:#ff4444}
+.toast.success{border-color:#00ff88;color:#00ff88}
+.toast.ai{border-color:#00ccff;color:#00ccff}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+</style>
+</head>
+<body>
+<h1>BudE CEO v26</h1>
+<div class="sub">Self-Evolving AI Operating System</div>
+
+<div class="card">
+<h2>API Endpoint</h2>
+<input class="api-input" id="api-url" value="http://localhost:8000" placeholder="API URL">
+<div class="row">
+<button onclick="saveApi()" class="secondary" style="flex:1">Connect</button>
+<button onclick="toggleAutoBuild()" class="gold" id="auto-build-btn" style="flex:1">Auto Build: OFF</button>
+</div>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
+<div class="tab" onclick="showTab('chat')">Chat</div>
+<div class="tab" onclick="showTab('commands')">Commands</div>
+<div class="tab" onclick="showTab('build')">Build</div>
+<div class="tab" onclick="showTab('revenue')">Revenue</div>
+<div class="tab" onclick="showTab('config')">Config</div>
+</div>
+
+<div id="dashboard" class="tab-content">
+<div class="card">
+<h2><span class="status-dot online" id="status-dot"></span> System Status <span id="ai-status" style="color:#888;font-size:0.75rem;margin-left:auto"></span></h2>
+<div class="grid">
+<div class="stat"><div class="num" id="cmd-count">0</div><div class="label">Commands</div></div>
+<div class="stat"><div class="num" id="idea-count">0</div><div class="label">Ideas</div></div>
+<div class="stat"><div class="num" id="project-count">0</div><div class="label">Projects</div></div>
+<div class="stat"><div class="num" id="sol-price">--</div><div class="label">SOL Price</div></div>
+</div>
+</div>
+<div class="card">
+<h2>AI Stats</h2>
+<div class="grid">
+<div class="stat"><div class="num" id="stat-ideas">0</div><div class="label">AI Ideas</div></div>
+<div class="stat"><div class="num" id="stat-builds">0</div><div class="label">AI Builds</div></div>
+<div class="stat"><div class="num" id="stat-calls">0</div><div class="label">API Calls</div></div>
+<div class="stat"><div class="num" id="stat-last">--</div><div class="label">Last Call</div></div>
+</div>
+</div>
+<div class="card">
+<h2>Market</h2>
+<div id="market-data" class="pre">Loading...</div>
+</div>
+<div class="card">
+<h2>Recent Activity</h2>
+<div id="activity-log" class="pre">Loading...</div>
+</div>
+</div>
+
+<div id="chat" class="tab-content hidden">
+<div class="card">
+<h2>BudE Chat</h2>
+<div id="chat-history" style="max-height:400px;overflow-y:auto;margin-bottom:12px;"></div>
+<div class="row">
+<input id="chat-input" placeholder="Ask BudE anything..." onkeypress="if(event.key==='Enter')sendChat()">
+<button onclick="sendChat()" style="width:auto">Send</button>
+</div>
+</div>
+</div>
+
+<div id="commands" class="tab-content hidden">
+<div class="card">
+<h2>Queue Command</h2>
+<select id="cmd-type">
+<option value="create_project">Create Project</option>
+<option value="add_idea">Add Idea</option>
+<option value="build_tool">Build Tool</option>
+<option value="chat">Chat</option>
+</select>
+<input id="cmd-value" placeholder="Value / Description">
+<button onclick="sendCommand()">Queue Command</button>
+</div>
+<div class="card">
+<h2>Command Queue</h2>
+<div id="command-list" class="pre">Loading...</div>
+</div>
+<div class="card">
+<h2>Ideas</h2>
+<div id="idea-list" class="pre">Loading...</div>
+</div>
+</div>
+
+<div id="build" class="tab-content hidden">
+<div class="card">
+<h2>AI Build</h2>
+<select id="build-type">
+<option value="code">Code</option>
+<option value="reasoning">Reasoning</option>
+<option value="fast">Fast</option>
+<option value="chat">Chat</option>
+</select>
+<input id="build-task" placeholder="What should BudE build?">
+<input id="build-filename" placeholder="Filename (e.g. api/my_tool.py)">
+<button onclick="sendBuild()">Build</button>
+</div>
+<div class="card">
+<h2>Auto Build Output</h2>
+<div id="build-output" class="pre">Ready to build...</div>
+</div>
+<div class="card">
+<h2>Build History</h2>
+<div id="build-history" class="pre">No builds yet...</div>
+</div>
+</div>
+
+<div id="revenue" class="tab-content hidden">
+<div class="card">
+<h2>Revenue Dashboard</h2>
+<div class="grid">
+<div class="stat"><div class="num" id="rev-potential">$0</div><div class="label">Potential Monthly</div></div>
+<div class="stat"><div class="num" id="rev-actual">$0</div><div class="label">Actual</div></div>
+<div class="stat"><div class="num" id="rev-tools">0</div><div class="label">Tools</div></div>
+</div>
+</div>
+<div class="card">
+<h2>Register Tool</h2>
+<input id="tool-name" placeholder="Tool Name">
+<select id="tool-type">
+<option value="saas">SaaS</option>
+<option value="freelance">Freelance</option>
+<option value="crypto_signals">Crypto Signals</option>
+<option value="content_generator">Content</option>
+<option value="affiliate">Affiliate</option>
+</select>
+<button onclick="registerTool()">Register</button>
+</div>
+<div class="card">
+<h2>Tool List</h2>
+<div id="tool-list" class="pre">Loading...</div>
+</div>
+</div>
+
+<div id="config" class="tab-content hidden">
+<div class="card">
+<h2>AI Configuration</h2>
+<div class="config-row">
+<input id="config-groq" placeholder="Groq API Key" type="password">
+</div>
+<div class="config-row">
+<input id="config-gh-token" placeholder="GitHub Token" type="password">
+<input id="config-gh-user" placeholder="GitHub Username">
+</div>
+<button onclick="saveConfig()">Save Config</button>
+</div>
+<div class="card">
+<h2>Stored Config</h2>
+<div id="config-display" class="pre">No config saved</div>
+</div>
+</div>
+
+<script>
+// ===== CONFIG =====
+let API = localStorage.getItem('bude_api') || 'http://localhost:8000';
+let config = JSON.parse(localStorage.getItem('bude_config') || '{}');
+let autoBuildInterval = null;
+let autoBuildEnabled = false;
+let aiStats = {ideas:0, builds:0, calls:0, lastCall:null};
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GH_API = 'https://api.github.com';
+
+document.getElementById('api-url').value = API;
+if(config.groqKey) document.getElementById('config-groq').value = config.groqKey;
+if(config.ghToken) document.getElementById('config-gh-token').value = config.ghToken;
+if(config.ghUser) document.getElementById('config-gh-user').value = config.ghUser;
+
+// ===== DATA STORE (localStorage fallback) =====
+function getData(){
+  return JSON.parse(localStorage.getItem('bude_data') || '{"commands":[],"ideas":[],"projects":[],"builds":[],"tools":[],"history":[]}');
+}
+function setData(data){
+  localStorage.setItem('bude_data', JSON.stringify(data));
+}
+function addHistory(source, text){
+  const data = getData();
+  data.history.unshift({source, text, time: new Date().toISOString()});
+  if(data.history.length > 100) data.history.pop();
+  setData(data);
+  refreshDashboard();
+}
+
+// ===== UI HELPERS =====
+function showToast(msg, type='success'){
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+
+function escapeHtml(text){
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ===== API & CONFIG =====
+function saveApi(){
+  API = document.getElementById('api-url').value.replace(/\/$/,'');
+  localStorage.setItem('bude_api', API);
+  loadState();
+  loadRevenue();
+  showToast('API connected to ' + API);
+}
+
+function saveConfig(){
+  config = {
+    groqKey: document.getElementById('config-groq').value.trim(),
+    ghToken: document.getElementById('config-gh-token').value.trim(),
+    ghUser: document.getElementById('config-gh-user').value.trim()
+  };
+  localStorage.setItem('bude_config', JSON.stringify(config));
+  document.getElementById('config-display').textContent = 
+    'Groq: ' + (config.groqKey ? '***' + config.groqKey.slice(-4) : 'Not set') + '\n' +
+    'GitHub: ' + (config.ghUser || 'Not set') + ' / ' + (config.ghToken ? '***' + config.ghToken.slice(-4) : 'Not set');
+  showToast('Config saved');
+}
+
+// ===== AUTO BUILD SYSTEM =====
+function toggleAutoBuild(){
+  autoBuildEnabled = !autoBuildEnabled;
+  const btn = document.getElementById('auto-build-btn');
+  if(autoBuildEnabled){
+    btn.textContent = 'Auto Build: ON';
+    btn.className = 'gold';
+    showToast('Auto Build enabled - AI will generate ideas & build every 60s', 'ai');
+    generateIdea(); // run immediately
+    autoBuildInterval = setInterval(generateIdea, 60000);
+  } else {
+    btn.textContent = 'Auto Build: OFF';
+    btn.className = 'secondary';
+    showToast('Auto Build disabled', 'error');
+    clearInterval(autoBuildInterval);
+    autoBuildInterval = null;
+  }
+}
+
+async function generateIdea(){
+  if(!config.groqKey){
+    showToast('No Groq API key configured', 'error');
+    toggleAutoBuild();
+    return;
+  }
+  
+  document.getElementById('status-dot').className = 'status-dot busy';
+  document.getElementById('ai-status').textContent = '(Building...)';
+  
+  try{
+    // Step 1: Generate business idea
+    const r = await fetch(GROQ_URL,{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+config.groqKey,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'llama-3.1-8b-instant',
+        messages:[{role:'user',content:'Generate ONE short business idea for an AI-powered micro-SaaS. Format: "Name: one sentence description". Be creative and specific.'}],
+        temperature:0.9,max_tokens:128
+      })
+    });
+    const d = await r.json();
+    const idea = d.choices?.[0]?.message?.content?.trim();
+    if(!idea || idea.startsWith('Error')) throw new Error('Bad idea response');
+    
+    // Save idea
+    const data = getData();
+    data.ideas.unshift({text:idea,time:new Date().toISOString()});
+    setData(data);
+    addHistory('auto', 'Idea: '+idea.substring(0,60));
+    aiStats.ideas++;
+    updateAIStatus();
+    refreshDashboard();
+    showToast('AI generated idea: ' + idea.substring(0,40), 'ai');
+    
+    // Step 2: Extract project name
+    const projectName = idea.split(':')[0].toLowerCase().replace(/[^a-z0-9]/g,'-').substring(0,30) || 'bude-project-'+Date.now();
+    
+    // Step 3: Build code
+    showToast('AI building: ' + projectName + '...', 'ai');
+    
+    const buildPrompt = 'Build a complete, working Python application for this business idea: ' + idea + 
+      '\n\nRequirements:\n- Single file, complete application\n- Include all necessary imports\n- Include error handling\n- Include a main() function\n- Output ONLY the complete Python code\n- No explanations, no markdown fences, just raw code';
+    
+    const buildR = await fetch(GROQ_URL,{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+config.groqKey,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        messages:[{role:'user',content:buildPrompt}],
+        temperature:0.3,max_tokens:2048
+      })
+    });
+    const buildD = await buildR.json();
+    let code = buildD.choices?.[0]?.message?.content || '';
+    code = code.replace(/^```[a-zA-Z]*\n?/,'').replace(/\n?```$/,'').trim();
+    
+    if(!code || code.length < 50){
+      showToast('Build failed - code too short', 'error');
+      document.getElementById('status-dot').className = 'status-dot online';
+      return;
+    }
+    
+    // Step 4: Save build
+    const filename = projectName + '.py';
+    const build = {
+      id: Date.now(),
+      filename: filename,
+      content: code,
+      model: 'llama-3.3-70b-versatile',
+      task: idea,
+      time: new Date().toISOString()
+    };
+    data.builds.unshift(build);
+    setData(data);
+    aiStats.builds++;
+    aiStats.calls += 2;
+    aiStats.lastCall = Date.now();
+    updateAIStatus();
+    refreshBuilds();
+    addHistory('auto', 'Built: ' + filename);
+    showToast('Built ' + filename + ' (' + code.length + ' chars)', 'success');
+    
+    // Update build output display
+    document.getElementById('build-output').textContent = 
+      '=== ' + filename + ' ===\nTask: ' + idea + '\nModel: llama-3.3-70b-versatile\nSize: ' + code.length + ' chars\n\n' + code.substring(0,800) + (code.length > 800 ? '\n... [truncated]' : '');
+    
+    // Step 5: GitHub push (if configured)
+    if(config.ghToken && config.ghUser){
+      try{
+        const repoName = 'bude-' + projectName;
+        const repoR = await fetch(GH_API + '/user/repos',{
+          method:'POST',
+          headers:{
+            'Authorization':'token ' + config.ghToken,
+            'Accept':'application/vnd.github.v3+json',
+            'Content-Type':'application/json'
+          },
+          body:JSON.stringify({
+            name: repoName,
+            description: 'Auto-built by BudE CEO: ' + idea,
+            private: false,
+            auto_init: true
+          })
+        });
+        
+        if(repoR.status === 201 || repoR.status === 422){ // 422 = repo exists
+          const repoD = repoR.status === 201 ? await repoR.json() : {html_url: 'https://github.com/' + config.ghUser + '/' + repoName};
+          const repoUrl = repoD.html_url;
+          
+          data.projects.unshift({name: repoName, repoUrl: repoUrl, time: new Date().toISOString()});
+          setData(data);
+          addHistory('auto', 'Created repo: ' + repoName);
+          showToast('Repo: ' + repoName, 'success');
+          
+          // Push file via GitHub API
+          await pushFileToRepo(config.ghUser + '/' + repoName, filename, code, 'Initial build by BudE AI');
+          addHistory('auto', 'Pushed ' + filename + ' to ' + repoName);
+          showToast('Auto-pushed to GitHub!', 'success');
+        }
+      }catch(ghErr){
+        console.error('GitHub error:', ghErr);
+        showToast('GitHub push failed: ' + ghErr.message, 'error');
+      }
+    }
+    
+    // Step 6: Register as revenue tool
+    const toolTypes = ['saas','freelance','crypto_signals','content_generator','affiliate'];
+    const randomType = toolTypes[Math.floor(Math.random() * toolTypes.length)];
+    data.tools.unshift({name: projectName, type: randomType, time: new Date().toISOString()});
+    setData(data);
+    addHistory('auto', 'Registered tool: ' + projectName);
+    refreshRevenue();
+    
+  }catch(e){
+    console.error('Autonomous build failed', e);
+    showToast('Autonomous build error: ' + e.message, 'error');
+  } finally {
+    document.getElementById('status-dot').className = 'status-dot online';
+    document.getElementById('ai-status').textContent = '';
+  }
+}
+
+async function pushFileToRepo(repoFullName, filename, content, message){
+  const b64 = btoa(unescape(encodeURIComponent(content)));
+  // Try to get existing file SHA (for update)
+  let sha = null;
+  try{
+    const getR = await fetch(GH_API + '/repos/' + repoFullName + '/contents/' + filename,{
+      headers:{'Authorization':'token '+config.ghToken,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(getR.status === 200){
+      const getD = await getR.json();
+      sha = getD.sha;
+    }
+  }catch(e){}
+  
+  const body = {message: message, content: b64, branch: 'main'};
+  if(sha) body.sha = sha;
+  
+  const putR = await fetch(GH_API + '/repos/' + repoFullName + '/contents/' + filename,{
+    method:'PUT',
+    headers:{
+      'Authorization':'token '+config.ghToken,
+      'Accept':'application/vnd.github.v3+json',
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify(body)
+  });
+  
+  if(!putR.ok && putR.status !== 422){
+    throw new Error('GitHub push failed: ' + putR.status);
+  }
+}
+
+// ===== REFRESH FUNCTIONS =====
+function refreshDashboard(){
+  const data = getData();
+  document.getElementById('cmd-count').textContent = data.commands.length;
+  document.getElementById('idea-count').textContent = data.ideas.length;
+  document.getElementById('project-count').textContent = data.projects.length;
+  document.getElementById('activity-log').textContent = data.history.slice(0,20).map(h=>'['+new Date(h.time).toLocaleTimeString()+'] '+h.source+': '+h.text).join('\n') || 'No activity';
+}
+
+function refreshBuilds(){
+  const data = getData();
+  document.getElementById('build-history').textContent = data.builds.slice(0,10).map(b=>b.filename + ' (' + b.content.length + ' chars) - ' + new Date(b.time).toLocaleString()).join('\n') || 'No builds yet';
+}
+
+function refreshRevenue(){
+  const data = getData();
+  const potential = data.tools.length * 500;
+  document.getElementById('rev-potential').textContent = '$' + potential;
+  document.getElementById('rev-tools').textContent = data.tools.length;
+  document.getElementById('tool-list').textContent = data.tools.slice(0,20).map(t=>'- '+t.name+' ['+t.type+']').join('\n') || 'No tools';
+}
+
+function updateAIStatus(){
+  document.getElementById('stat-ideas').textContent = aiStats.ideas;
+  document.getElementById('stat-builds').textContent = aiStats.builds;
+  document.getElementById('stat-calls').textContent = aiStats.calls;
+  document.getElementById('stat-last').textContent = aiStats.lastCall ? new Date(aiStats.lastCall).toLocaleTimeString() : '--';
+}
+
+// ===== API FUNCTIONS =====
+async function loadState(){
+  try{
+    const r = await fetch(API+'/state');
+    if(!r.ok) throw new Error('API offline');
+    const d = await r.json();
+    document.getElementById('status-dot').className = 'status-dot online';
+    document.getElementById('cmd-count').textContent = d.commands?.length || 0;
+    document.getElementById('idea-count').textContent = d.ideas?.length || 0;
+    document.getElementById('project-count').textContent = d.projects?.length || 0;
+    document.getElementById('sol-price').textContent = d.market?.sol_price ? '$'+d.market.sol_price : '--';
+    document.getElementById('market-data').textContent = JSON.stringify(d.market,null,2);
+    document.getElementById('command-list').textContent = d.commands?.map(c=>'['+c.status+'] '+c.type+': '+c.value).join('\n') || 'No commands';
+    document.getElementById('idea-list').textContent = d.ideas?.map(i=>'- '+i.text).join('\n') || 'No ideas yet';
+  }catch(e){
+    document.getElementById('status-dot').className = 'status-dot offline';
+    // Fallback to local data
+    refreshDashboard();
+  }
+}
+
+async function sendCommand(){
+  const type = document.getElementById('cmd-type').value;
+  const value = document.getElementById('cmd-value').value;
+  if(!value) return;
+  try{
+    await fetch(API+'/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,value})});
+  }catch(e){
+    // Fallback: save locally
+    const data = getData();
+    data.commands.push({type, value, status:'pending', created_at: new Date().toISOString()});
+    setData(data);
+  }
+  document.getElementById('cmd-value').value='';
+  loadState();
+}
+
+async function sendChat(){
+  const input = document.getElementById('chat-input');
+  const msg = input.value;
+  if(!msg) return;
+  const hist = document.getElementById('chat-history');
+  hist.innerHTML += '<div class="msg user">'+escapeHtml(msg)+'<div class="timestamp">'+new Date().toLocaleTimeString()+'</div></div>';
+  input.value='';
+  hist.scrollTop = hist.scrollHeight;
+  try{
+    const r = await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+    const d = await r.json();
+    const reply = d.response || d.error || 'No response';
+    hist.innerHTML += '<div class="msg ai">'+escapeHtml(reply)+'<div class="timestamp">'+new Date().toLocaleTimeString()+' '+(d.model||'')+'</div></div>';
+    hist.scrollTop = hist.scrollHeight;
+  }catch(e){
+    hist.innerHTML += '<div class="msg ai" style="border-color:#ff4444">Error: '+escapeHtml(e.message)+'</div>';
+  }
+}
+
+async function sendBuild(){
+  const task = document.getElementById('build-task').value;
+  const type = document.getElementById('build-type').value;
+  const filename = document.getElementById('build-filename').value;
+  if(!task) return;
+  document.getElementById('build-output').textContent = 'Building...';
+  try{
+    const r = await fetch(API+'/build',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task,type,filename})});
+    const d = await r.json();
+    document.getElementById('build-output').textContent = d.error ? 'ERROR: '+d.error : 'Built: '+d.file+'\n\nPreview:\n'+d.content_preview;
+  }catch(e){
+    document.getElementById('build-output').textContent = 'Error: '+e.message;
+  }
+}
+
+async function loadRevenue(){
+  try{
+    const r = await fetch(API+'/revenue');
+    const d = await r.json();
+    document.getElementById('rev-potential').textContent = '$'+d.total_potential_monthly;
+    document.getElementById('rev-actual').textContent = '$'+d.total_actual;
+    document.getElementById('rev-tools').textContent = d.tool_count;
+    document.getElementById('tool-list').textContent = JSON.stringify(d.tools,null,2);
+  }catch(e){
+    refreshRevenue();
+  }
+}
+
+async function registerTool(){
+  const name = document.getElementById('tool-name').value;
+  const type = document.getElementById('tool-type').value;
+  if(!name) return;
+  try{
+    await fetch(API+'/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'build_tool',value:name,tool_type:type})});
+  }catch(e){
+    const data = getData();
+    data.tools.unshift({name, type, time: new Date().toISOString()});
+    setData(data);
+  }
+  document.getElementById('tool-name').value='';
+  loadRevenue();
+}
+
+// ===== INIT =====
+saveConfig(); // load display
+refreshDashboard();
+refreshBuilds();
+refreshRevenue();
+updateAIStatus();
+setInterval(loadState,3000);
+setInterval(loadRevenue,5000);
+loadState();
+loadRevenue();
+</script>
+</body>
+</html>
