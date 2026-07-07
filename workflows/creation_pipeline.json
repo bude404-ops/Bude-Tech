@@ -1,0 +1,107 @@
+{
+  "workflow": {
+
+    "name": "STC Creation Pipeline",
+
+    "version": "1.0",
+
+    "purpose":
+    "Move concepts through creation stages"
+
+  },
+
+
+  "stages": [
+
+    {
+
+      "stage": 1,
+
+      "name": "Directive",
+
+      "agent": "Strategium",
+
+      "action":
+      "Classify objective"
+
+    },
+
+
+    {
+
+      "stage": 2,
+
+      "name": "Research",
+
+      "agent": "Knowledge Nexus",
+
+      "action":
+      "Collect supporting knowledge"
+
+    },
+
+
+    {
+
+      "stage": 3,
+
+      "name": "Design",
+
+      "agent": "Forge",
+
+      "action":
+      "Generate concept"
+
+    },
+
+
+    {
+
+      "stage": 4,
+
+      "name": "Simulation",
+
+      "agent": "Reality Testing Layer",
+
+      "action":
+      "Evaluate outcomes"
+
+    },
+
+
+    {
+
+      "stage": 5,
+
+      "name": "Review",
+
+      "agent": "Sentinel",
+
+      "action":
+      "Verify and document"
+
+    },
+
+
+    {
+
+      "stage": 6,
+
+      "name": "Archive",
+
+      "agent": "Archivist",
+
+      "action":
+      "Preserve knowledge"
+
+    }
+
+  ],
+
+
+  "active_workflows": [],
+
+
+  "completed_workflows": []
+
+}
