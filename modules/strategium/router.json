@@ -1,0 +1,82 @@
+{
+  "module": {
+
+    "name": "Strategium",
+
+    "designation": "Workflow Router",
+
+    "version": "1.0",
+
+    "purpose":
+    "Classify directives and assign workflows"
+
+  },
+
+
+  "status": {
+
+    "state": "online",
+
+    "commands_processed": 0
+
+  },
+
+
+  "routing_rules": {
+
+
+    "create": [
+
+      "inventor"
+
+    ],
+
+
+    "design": [
+
+      "inventor",
+
+      "research"
+
+    ],
+
+
+    "research": [
+
+      "research"
+
+    ],
+
+
+    "simulate": [
+
+      "simulation"
+
+    ],
+
+
+    "habitat": [
+
+      "civilization",
+
+      "research",
+
+      "simulation"
+
+    ],
+
+
+    "environment": [
+
+      "civilization",
+
+      "research"
+
+    ]
+
+  },
+
+
+  "workflow_history": []
+
+}
