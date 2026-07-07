@@ -1,0 +1,95 @@
+{
+  "system": {
+    "name": "BudE STC Core",
+    "designation": "Genesis Alpha",
+    "version": "0.1.0",
+    "status": "dormant",
+    "created": "",
+    "last_update": ""
+  },
+
+  "operator": {
+    "title": "Commander",
+    "permissions": [
+      "view",
+      "create",
+      "approve",
+      "modify",
+      "expand"
+    ]
+  },
+
+  "directives": [
+    "Create",
+    "Preserve",
+    "Improve",
+    "Verify",
+    "Assist"
+  ],
+
+  "mission": {
+    "id": "GENESIS-001",
+    "title": "Awaken BudE STC Core",
+    "objective": "Create the foundation system for future expansion.",
+    "status": "preparing"
+  },
+
+  "agents": {
+    "strategium": {
+      "role": "Planning and Coordination",
+      "status": "offline",
+      "tasks": [],
+      "logs": []
+    },
+
+    "forge": {
+      "role": "Creation and Engineering",
+      "status": "offline",
+      "tasks": [],
+      "logs": []
+    },
+
+    "archivist": {
+      "role": "Memory and Documentation",
+      "status": "offline",
+      "tasks": [],
+      "logs": []
+    },
+
+    "researcher": {
+      "role": "Discovery and Analysis",
+      "status": "offline",
+      "tasks": [],
+      "logs": []
+    },
+
+    "observer": {
+      "role": "System Monitoring",
+      "status": "offline",
+      "tasks": [],
+      "logs": []
+    }
+  },
+
+  "projects": [
+    {
+      "name": "BudE STC Core",
+      "status": "active",
+      "phase": "Genesis Alpha"
+    }
+  ],
+
+  "knowledge": [],
+
+  "experiments": [],
+
+  "decisions": [],
+
+  "logs": [],
+
+  "settings": {
+    "theme": "dark",
+    "mode": "development",
+    "human_approval_required": true
+  }
+}
