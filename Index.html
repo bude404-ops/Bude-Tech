@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BudE STC Core</title>
+
+<style>
+body {
+    margin: 0;
+    background: #05070a;
+    color: #e8f1ff;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    text-align: center;
+    padding: 25px;
+    border-bottom: 1px solid #243447;
+}
+
+h1 {
+    margin: 0;
+}
+
+.status {
+    margin-top: 10px;
+    color: #4cff88;
+}
+
+.container {
+    padding: 15px;
+    display: grid;
+    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+    background: #0d141c;
+    border: 1px solid #243447;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.card h2 {
+    margin-top: 0;
+}
+
+.agent {
+    background: #111c26;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.online {
+    color: #4cff88;
+}
+
+.warning {
+    color: #ffd166;
+}
+
+.console {
+    background: black;
+    padding: 12px;
+    min-height: 100px;
+    font-family: monospace;
+    overflow:auto;
+}
+
+button {
+    width:100%;
+    padding:14px;
+    border-radius:8px;
+    border:none;
+    background:#1d5cff;
+    color:white;
+    font-size:16px;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>
+BudE STC Core
+</h1>
+
+<div>
+Genesis Alpha 0.1
+</div>
+
+<div class="status">
+● COMMAND BRIDGE ONLINE
+</div>
+
+</header>
+
+
+<div class="container">
+
+
+<div class="card">
+
+<h2>Core Status</h2>
+
+<div id="system">
+Loading Core...
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<h2>Mission</h2>
+
+<div id="mission">
+Loading Mission...
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Agent Network</h2>
+
+<div id="agents">
+Initializing Agents...
+</div>
+
+</div>
+
+
+
+
+
+<div class="card">
+
+<h2>Projects</h2>
+
+<div id="projects">
+Loading Projects...
+</div>
+
+</div>
+
+
+
+
+
+<div class="card">
+
+<h2>System Console</h2>
+
+<div class="console" id="console">
+
+> Awaiting Core Data...
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Commander Controls</h2>
+
+<button onclick="createDirective()">
+Create Directive
+</button>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+async function loadCore(){
+
+try {
+
+const response = await fetch("core.json");
+
+const core = await response.json();
+
+
+document.getElementById("system").innerHTML = `
+
+<p>Name: ${core.system.name}</p>
+
+<p>Version: ${core.system.version}</p>
+
+<p>Status: <span class="online">${core.system.status}</span></p>
+
+`;
+
+
+document.getElementById("mission").innerHTML = `
+
+<p>${core.mission.id}</p>
+
+<p>${core.mission.title}</p>
+
+<p>Status: ${core.mission.status}</p>
+
+`;
+
+
+
+let agentsHTML="";
+
+
+Object.keys(core.agents).forEach(agent=>{
+
+agentsHTML += `
+
+<div class="agent">
+
+<b>${agent}</b><br>
+
+Role:
+${core.agents[agent].role}
+
+<br>
+
+Status:
+<span class="online">
+${core.agents[agent].status}
+</span>
+
+</div>
+
+`;
+
+});
+
+
+document.getElementById("agents").innerHTML = agentsHTML;
+
+
+
+let projectHTML="";
+
+
+core.projects.forEach(project=>{
+
+projectHTML += `
+
+<div class="agent">
+
+<b>${project.name}</b>
+
+<br>
+
+Status:
+${project.status}
+
+<br>
+
+Phase:
+${project.phase}
+
+</div>
+
+`;
+
+});
+
+
+document.getElementById("projects").innerHTML = projectHTML;
+
+
+
+document.getElementById("console").innerHTML = `
+
+> Memory Crystal loaded<br>
+
+> Agents detected: ${Object.keys(core.agents).length}<br>
+
+> Core ready<br>
+
+> Awaiting Commander...
+
+`;
+
+
+
+}
+
+catch(error){
+
+document.getElementById("console").innerHTML =
+
+"> ERROR: Core data unavailable";
+
+}
+
+}
+
+
+
+function createDirective(){
+
+alert(
+"Directive system will be activated in a future upgrade."
+);
+
+}
+
+
+loadCore();
+
+
+</script>
+
+
+</body>
+</html>
