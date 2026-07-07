@@ -1,0 +1,124 @@
+{
+  "system": {
+    "name": "BudE STC Core",
+    "designation": "Genesis Beta",
+    "version": "1.7.0",
+    "status": "dormant",
+    "last_update": ""
+  },
+
+  "operator": {
+    "title": "Commander",
+    "human_approval_required": true
+  },
+
+  "mission": {
+    "id": "GENESIS-001",
+    "title": "Create a human-guided STC framework",
+    "status": "preparing"
+  },
+
+  "agents": {
+    "strategium": {
+      "role": "Planning Intelligence",
+      "status": "offline",
+      "memory": [],
+      "tasks": []
+    },
+
+    "forge": {
+      "role": "Invention Engineering",
+      "status": "offline",
+      "memory": [],
+      "tasks": []
+    },
+
+    "archivist": {
+      "role": "Knowledge Preservation",
+      "status": "offline",
+      "memory": [],
+      "tasks": []
+    },
+
+    "researcher": {
+      "role": "Scientific Exploration",
+      "status": "offline",
+      "memory": [],
+      "tasks": []
+    },
+
+    "observer": {
+      "role": "System Analysis",
+      "status": "offline",
+      "memory": [],
+      "tasks": []
+    },
+
+    "sentinel": {
+      "role": "Safety Verification",
+      "status": "offline",
+      "memory": [],
+      "tasks": []
+    }
+  },
+
+  "modules": {
+
+    "inventor": {
+      "name": "Forge",
+      "status": "online",
+      "path": "modules/inventor/forge.json"
+    },
+
+    "research": {
+      "name": "Knowledge Nexus",
+      "status": "online",
+      "path": "modules/research/knowledge.json"
+    },
+
+    "civilization": {
+      "name": "World Systems",
+      "status": "online",
+      "path": "modules/civilization/systems.json"
+    },
+
+    "simulation": {
+      "name": "Reality Testing Layer",
+      "status": "online",
+      "path": "modules/simulation/models.json"
+    },
+
+    "safety": {
+      "name": "Sentinel Protocol",
+      "status": "online",
+      "path": "modules/safety/protocols.json"
+    }
+  },
+
+  "knowledge_graph": {
+    "nodes": [],
+    "connections": []
+  },
+
+  "project_forge": {
+    "active_projects": [],
+    "completed_projects": []
+  },
+
+  "activity": [],
+
+  "logs": [],
+
+  "core_metrics": {
+    "health": 100,
+    "agents": 6,
+    "modules": 5,
+    "projects": 0,
+    "knowledge": 0
+  },
+
+  "evolution": {
+    "current_phase": "Genesis Beta 1.7",
+    "next_phase": "Genesis Beta 1.8 Knowledge Graph"
+  }
+}
