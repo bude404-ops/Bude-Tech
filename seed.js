@@ -1,111 +1,251 @@
 /*
  BudE STC Core
- Genesis Alpha 0.1
+ Genesis Alpha 0.2
 
- The Genesis Engine
+ Genesis Engine + Integrity Validator
 */
 
 const fs = require("fs");
 
+
 const CORE_FILE = "./core.json";
 
-function loadCore() {
-    if (!fs.existsSync(CORE_FILE)) {
-        console.log("ERROR: core.json missing");
-        process.exit(1);
-    }
 
-    return JSON.parse(fs.readFileSync(CORE_FILE, "utf8"));
-}
-
-
-function saveCore(core) {
-    fs.writeFileSync(
-        CORE_FILE,
-        JSON.stringify(core, null, 2)
-    );
-}
+const REQUIRED_FILES = [
+    "core.json",
+    "seed.js",
+    "index.html",
+    "genesis.yml"
+];
 
 
-function logEvent(core, message) {
 
-    const event = {
-        timestamp: new Date().toISOString(),
-        event: message,
-        source: "Genesis Engine"
-    };
+function checkFiles(){
 
-    core.logs.push(event);
-}
+    console.log("\n[Integrity Check]");
 
+    let missing = [];
 
-function initializeAgents(core) {
+    REQUIRED_FILES.forEach(file => {
 
-    Object.keys(core.agents).forEach(agent => {
+        if(fs.existsSync(file)){
 
-        core.agents[agent].status = "ready";
+            console.log("✓ " + file);
 
-        core.agents[agent].logs.push({
-            timestamp: new Date().toISOString(),
-            event: "Agent initialized"
-        });
+        } else {
+
+            console.log("✗ Missing: " + file);
+            missing.push(file);
+
+        }
 
     });
+
+
+    return missing;
+
 }
 
 
-function awakenCore() {
 
-    console.log(`
+
+function loadCore(){
+
+    if(!fs.existsSync(CORE_FILE)){
+
+        console.log(
+            "ERROR: Memory Crystal unavailable"
+        );
+
+        process.exit(1);
+
+    }
+
+
+    return JSON.parse(
+        fs.readFileSync(
+            CORE_FILE,
+            "utf8"
+        )
+    );
+
+}
+
+
+
+
+function saveCore(core){
+
+    fs.writeFileSync(
+        CORE_FILE,
+        JSON.stringify(
+            core,
+            null,
+            2
+        )
+    );
+
+}
+
+
+
+
+function logEvent(core,message){
+
+    core.logs.push({
+
+        timestamp:
+        new Date().toISOString(),
+
+        event: message,
+
+        source:
+        "Genesis Engine"
+
+    });
+
+}
+
+
+
+
+function initializeAgents(core){
+
+
+    Object.keys(core.agents)
+    .forEach(agent=>{
+
+
+        core.agents[agent].status =
+        "ready";
+
+
+        core.agents[agent].logs.push({
+
+            timestamp:
+            new Date().toISOString(),
+
+            event:
+            "Agent activated"
+
+        });
+
+
+    });
+
+
+}
+
+
+
+
+function awaken(){
+
+
+console.log(`
 ==================================
-      BudE STC Core
-      Genesis Alpha 0.1
+ BudE STC Core
+ Genesis Alpha 0.2
+
+ Integrity Awakening
 ==================================
 `);
 
-    let core = loadCore();
 
 
-    console.log("Loading Memory Crystal...");
-    logEvent(core, "Memory loaded");
+let missing = checkFiles();
 
 
-    console.log("Initializing Agents...");
-    initializeAgents(core);
+
+let core = loadCore();
 
 
-    console.log("Activating Core...");
 
-    core.system.status = "awake";
-    core.system.last_update =
-        new Date().toISOString();
+if(missing.length > 0){
 
 
-    core.mission.status = "active";
+    core.system.status =
+    "degraded";
 
 
     logEvent(
         core,
-        "BudE STC Core awakened"
+        "Integrity failure detected: "
+        + missing.join(", ")
     );
 
 
-    saveCore(core);
+}
+
+else{
 
 
-    console.log(`
-==================================
- STATUS: ONLINE
+    core.system.status =
+    "awake";
 
- Mission:
- ${core.mission.title}
 
- Agents:
- ${Object.keys(core.agents).length}
+    logEvent(
+        core,
+        "All Genesis components verified"
+    );
 
-==================================
-`);
+
 }
 
 
-awakenCore();
+
+
+
+console.log("\nLoading Memory Crystal...");
+
+
+console.log(
+"Initializing Agent Network..."
+);
+
+
+initializeAgents(core);
+
+
+
+core.system.last_update =
+new Date().toISOString();
+
+
+core.mission.status =
+"active";
+
+
+
+logEvent(
+core,
+"BudE STC Core Genesis sequence complete"
+);
+
+
+
+saveCore(core);
+
+
+
+console.log(`
+
+==================================
+ CORE STATUS:
+ ${core.system.status}
+
+ AGENTS:
+ ${Object.keys(core.agents).length}
+
+ MISSION:
+ ${core.mission.id}
+
+==================================
+
+`);
+
+}
+
+
+
+awaken();
