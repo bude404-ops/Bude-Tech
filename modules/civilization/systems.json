@@ -1,0 +1,77 @@
+{
+  "module": {
+
+    "name": "Civilization Core",
+
+    "designation": "World Systems",
+
+    "version": "1.0",
+
+    "purpose":
+    "Large-scale systems planning and sustainable design"
+
+  },
+
+
+  "status": {
+
+    "state": "online",
+
+    "systems_tracked": 0
+
+  },
+
+
+  "domains": [
+
+    "environment",
+
+    "energy",
+
+    "water",
+
+    "food",
+
+    "housing",
+
+    "transportation",
+
+    "industry",
+
+    "space_habitats"
+
+  ],
+
+
+  "planning_pipeline": [
+
+    "problem",
+
+    "research",
+
+    "system_design",
+
+    "simulation",
+
+    "evaluation",
+
+    "implementation"
+
+  ],
+
+
+  "systems": [],
+
+
+  "habitat_concepts": [],
+
+
+  "resource_models": [],
+
+
+  "environment_models": [],
+
+
+  "future_projects": []
+
+}
