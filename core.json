@@ -2,21 +2,20 @@
   "system": {
     "name": "BudE STC Core",
     "designation": "Genesis Alpha",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "status": "dormant",
-    "created": "",
     "last_update": ""
   },
 
   "operator": {
     "title": "Commander",
-    "permissions": [
-      "view",
-      "create",
-      "approve",
-      "modify",
-      "expand"
-    ]
+    "human_approval_required": true
+  },
+
+  "mission": {
+    "id": "GENESIS-001",
+    "title": "Awaken BudE STC Core",
+    "status": "preparing"
   },
 
   "directives": [
@@ -27,17 +26,11 @@
     "Assist"
   ],
 
-  "mission": {
-    "id": "GENESIS-001",
-    "title": "Awaken BudE STC Core",
-    "objective": "Create the foundation system for future expansion.",
-    "status": "preparing"
-  },
-
   "agents": {
     "strategium": {
       "role": "Planning and Coordination",
       "status": "offline",
+      "memory": [],
       "tasks": [],
       "logs": []
     },
@@ -45,6 +38,7 @@
     "forge": {
       "role": "Creation and Engineering",
       "status": "offline",
+      "memory": [],
       "tasks": [],
       "logs": []
     },
@@ -52,6 +46,7 @@
     "archivist": {
       "role": "Memory and Documentation",
       "status": "offline",
+      "memory": [],
       "tasks": [],
       "logs": []
     },
@@ -59,6 +54,7 @@
     "researcher": {
       "role": "Discovery and Analysis",
       "status": "offline",
+      "memory": [],
       "tasks": [],
       "logs": []
     },
@@ -66,30 +62,59 @@
     "observer": {
       "role": "System Monitoring",
       "status": "offline",
+      "memory": [],
+      "tasks": [],
+      "logs": []
+    },
+
+    "sentinel": {
+      "role": "Security and Approval",
+      "status": "offline",
+      "memory": [],
       "tasks": [],
       "logs": []
     }
   },
 
-  "projects": [
-    {
-      "name": "BudE STC Core",
-      "status": "active",
-      "phase": "Genesis Alpha"
-    }
-  ],
+  "knowledge_vault": {
+    "concepts": [],
+    "research": [],
+    "designs": [],
+    "documentation": [],
+    "lessons": []
+  },
 
-  "knowledge": [],
+  "project_forge": {
+    "active_projects": [],
+    "completed_projects": [],
+    "archived_projects": []
+  },
 
-  "experiments": [],
+  "directives_queue": [],
 
-  "decisions": [],
+  "completed_directives": [],
+
+  "activity": [],
 
   "logs": [],
 
-  "settings": {
-    "theme": "dark",
-    "mode": "development",
-    "human_approval_required": true
+  "core_metrics": {
+    "health": 100,
+    "uptime": 0,
+    "total_agents": 6,
+    "total_projects": 0,
+    "total_knowledge": 0,
+    "last_cycle": ""
+  },
+
+  "evolution": {
+    "current_phase": "Genesis Alpha 1.0",
+    "next_phase": "Genesis Beta 1.1"
+  },
+
+  "bridge": {
+    "mode": "local",
+    "connection": "offline",
+    "last_sync": ""
   }
 }
