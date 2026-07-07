@@ -1,0 +1,75 @@
+# ==========================================
+# BudE STC Core
+# Genesis Alpha 0.1
+# Genesis Manifest
+# ==========================================
+
+system:
+  name: "BudE STC Core"
+  designation: "Genesis Alpha"
+  version: "0.1.0"
+  purpose: "Human-guided AI creation and knowledge system"
+
+
+core:
+  memory:
+    file: "core.json"
+
+  engine:
+    file: "seed.js"
+
+  interface:
+    file: "index.html"
+
+
+mission:
+  id: "GENESIS-001"
+  title: "Awaken BudE STC Core"
+  objective: "Initialize the first portable STC seed."
+
+
+requirements:
+
+  files:
+    - "core.json"
+    - "seed.js"
+    - "index.html"
+    - "genesis.yml"
+
+
+agents:
+
+  - name: "Strategium"
+    role: "Planning and Coordination"
+
+  - name: "Forge"
+    role: "Creation and Engineering"
+
+  - name: "Archivist"
+    role: "Memory and Documentation"
+
+  - name: "Researcher"
+    role: "Discovery and Analysis"
+
+  - name: "Observer"
+    role: "System Monitoring"
+
+
+directives:
+
+  - "Create"
+  - "Preserve"
+  - "Improve"
+  - "Verify"
+  - "Assist"
+
+
+security:
+
+  human_approval_required: true
+  autonomous_core_changes: false
+
+
+status:
+  phase: "Genesis Alpha"
+  state: "Dormant awaiting activation"
