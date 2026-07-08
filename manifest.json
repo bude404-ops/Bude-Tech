@@ -1,0 +1,44 @@
+{
+  "name": "Voltann Mobile Platform",
+
+  "short_name": "Voltann",
+
+  "description": "A mobile-first knowledge and workflow platform designed to organize missions, research, and technology development.",
+
+  "start_url": "./index.html",
+
+  "scope": "./",
+
+  "display": "standalone",
+
+  "orientation": "portrait",
+
+  "theme_color": "#050914",
+
+  "background_color": "#050914",
+
+
+  "categories": [
+    "productivity",
+    "education",
+    "research",
+    "utilities"
+  ],
+
+
+  "lang": "en-US",
+
+
+  "shortcuts": [
+
+    {
+      "name": "Open Voltann Core",
+
+      "short_name": "Core",
+
+      "url": "./index.html"
+    }
+
+  ]
+
+}
