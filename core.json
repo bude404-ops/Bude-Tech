@@ -1,0 +1,323 @@
+{
+  "system": {
+
+    "name": "BudE STC Core",
+
+    "designation": "Genesis Knowledge Seed",
+
+    "version": "4.1.0",
+
+    "status": "dormant",
+
+    "purpose":
+    "Human-guided knowledge preservation and technology development framework"
+
+  },
+
+
+  "identity": {
+
+    "classification":
+    "Engineering Intelligence Framework",
+
+    "mission":
+    "Preserve knowledge, organize ideas, and assist in creating beneficial solutions",
+
+    "inspiration":
+    "Ancient knowledge archive concepts and engineering systems",
+
+
+    "principles": [
+
+      "Preserve knowledge",
+
+      "Test ideas before implementation",
+
+      "Improve sustainability",
+
+      "Document discoveries",
+
+      "Maintain human authority"
+
+    ]
+
+  },
+
+
+  "directives": {
+
+
+    "primary": [
+
+      {
+
+        "name":
+        "Preservation",
+
+        "purpose":
+        "Maintain records of knowledge and discoveries"
+
+      },
+
+
+      {
+
+        "name":
+        "Creation",
+
+        "purpose":
+        "Assist in developing useful concepts and designs"
+
+      },
+
+
+      {
+
+        "name":
+        "Verification",
+
+        "purpose":
+        "Encourage testing and review before adoption"
+
+      },
+
+
+      {
+
+        "name":
+        "Stewardship",
+
+        "purpose":
+        "Support long-term sustainable systems"
+
+      },
+
+
+      {
+
+        "name":
+        "Human Oversight",
+
+        "purpose":
+        "Keep final decisions with human operators"
+
+      }
+
+    ]
+
+  },
+
+
+  "agents": {
+
+
+    "strategium": {
+
+      "role":
+      "Mission classification and workflow routing",
+
+      "status":
+      "ready"
+
+    },
+
+
+    "forge": {
+
+      "role":
+      "Engineering and design concepts",
+
+      "status":
+      "ready"
+
+    },
+
+
+    "researcher": {
+
+      "role":
+      "Knowledge discovery and analysis",
+
+      "status":
+      "ready"
+
+    },
+
+
+    "civilization": {
+
+      "role":
+      "Large system planning",
+
+      "status":
+      "ready"
+
+    },
+
+
+    "simulation": {
+
+      "role":
+      "Concept evaluation",
+
+      "status":
+      "ready"
+
+    },
+
+
+    "sentinel": {
+
+      "role":
+      "Review and safety validation",
+
+      "status":
+      "ready"
+
+    }
+
+  },
+
+
+  "knowledge": {
+
+
+    "nodes": [
+
+      {
+
+        "id":
+        "GENESIS-001",
+
+        "name":
+        "BudE STC Core",
+
+        "category":
+        "Technology Framework"
+
+      }
+
+    ],
+
+
+    "discoveries": [],
+
+
+    "research": []
+
+  },
+
+
+  "projects": {
+
+
+    "active": [],
+
+
+    "completed": []
+
+  },
+
+
+  "command_center": {
+
+
+    "received": 0,
+
+
+    "queue": [],
+
+
+    "history": []
+
+  },
+
+
+  "workflow": {
+
+
+    "pipeline": [
+
+      "Directive",
+
+      "Research",
+
+      "Design",
+
+      "Simulation",
+
+      "Review",
+
+      "Archive"
+
+    ]
+
+  },
+
+
+  "memory": {
+
+
+    "events": [],
+
+
+    "lessons": [],
+
+
+    "archive": []
+
+  },
+
+
+  "evolution": {
+
+
+    "current":
+
+    "Release Candidate 4.1",
+
+
+    "history": [
+
+      {
+
+        "version":
+        "4.1.0",
+
+        "change":
+        "Four file production consolidation"
+
+      }
+
+    ],
+
+
+    "future": [
+
+      "Advanced research systems",
+
+      "Simulation expansion",
+
+      "Knowledge ingestion",
+
+      "Civilization planning models"
+
+    ]
+
+  },
+
+
+  "metrics": {
+
+
+    "commands": 0,
+
+    "projects": 0,
+
+    "knowledge_nodes": 1,
+
+    "health": 100
+
+  }
+
+}
