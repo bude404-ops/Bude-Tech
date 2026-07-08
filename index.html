@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voltann Mobile Core — Autonomous</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#050914">
+<style>
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding-bottom: 90px;
+    background: #050914;
+    color: #d8f7ff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.header { text-align: center; padding: 20px; }
+.header h1 { font-size: 32px; letter-spacing: 4px; margin: 0; }
+.header p { opacity: 0.7; font-size: 12px; margin: 5px 0 0; }
+.core {
+    width: 200px; height: 200px; margin: 15px auto;
+    border-radius: 50%; border: 3px solid #00eaff;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; position: relative;
+    box-shadow: 0 0 20px #00eaff, 0 0 70px rgba(0,234,255,.4);
+    animation: pulse 3s infinite;
+    transition: all 0.5s;
+}
+.core.autonomous {
+    border-color: #00ff99;
+    box-shadow: 0 0 30px #00ff99, 0 0 100px rgba(0,255,153,.5);
+    animation: pulse 1.5s infinite, spin-glow 4s linear infinite;
+}
+.core.running {
+    border-color: #ffaa00;
+    box-shadow: 0 0 30px #ffaa00, 0 0 100px rgba(255,170,0,.5);
+}
+@keyframes pulse { 50% { transform: scale(1.05); } }
+@keyframes spin-glow {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.08) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+.panel {
+    margin: 12px 15px; padding: 16px; border-radius: 16px;
+    background: rgba(0,170,255,.06);
+    border: 1px solid rgba(0,220,255,.25);
+}
+.panel h2 { margin: 0 0 12px; font-size: 16px; color: #00eaff; }
+button {
+    width: 100%; padding: 14px; margin: 6px 0;
+    border-radius: 25px; border: none;
+    background: #008cff; color: white; font-size: 15px;
+    cursor: pointer; transition: all 0.2s; font-weight: 600;
+}
+button:hover { background: #00aaff; box-shadow: 0 0 15px rgba(0,170,255,0.4); }
+button:active { transform: scale(0.97); }
+button.secondary { background: rgba(0,170,255,.2); border: 1px solid rgba(0,220,255,.4); }
+button.danger { background: rgba(255,50,50,.7); }
+button.success { background: rgba(0,200,100,.7); }
+.status {
+    text-align: center; color: #00ff99; font-weight: bold;
+    font-size: 13px; padding: 8px;
+}
+.crystal { font-size: 60px; text-align: center; animation: glow 2s infinite alternate; }
+@keyframes glow { from { text-shadow: 0 0 10px #00eaff; } to { text-shadow: 0 0 40px #00eaff; } }
+.stat { display: flex; justify-content: space-between; padding: 8px; font-size: 14px; }
+.stat span:first-child { opacity: 0.7; }
+.stat span:last-child { color: #00eaff; font-weight: bold; }
+.nav {
+    position: fixed; bottom: 0; width: 100%;
+    display: flex; background: #02040a;
+    border-top: 1px solid rgba(0,220,255,.2); padding: 4px;
+}
+.nav button {
+    font-size: 11px; padding: 10px 4px; margin: 3px;
+    background: transparent; border: 1px solid rgba(0,220,255,.2);
+}
+.nav button.active { background: rgba(0,170,255,.2); border-color: #00eaff; color: #00eaff; }
+.mission-item {
+    background: rgba(0,170,255,.08);
+    border: 1px solid rgba(0,220,255,.2);
+    border-radius: 10px; padding: 10px; margin: 6px 0;
+    font-size: 12px; position: relative;
+}
+.mission-item.running { border-color: #ffaa00; background: rgba(255,170,0,.1); }
+.mission-item.done { border-color: #00ff99; background: rgba(0,255,153,.08); }
+.mission-item .badge {
+    position: absolute; top: 8px; right: 8px;
+    font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    background: rgba(0,220,255,.2);
+}
+.log-entry {
+    font-size: 11px; padding: 4px 0;
+    border-bottom: 1px solid rgba(0,220,255,.08);
+}
+.log-entry .time { color: #00eaff; font-size: 10px; margin-right: 6px; }
+.log-entry .auto { color: #ffaa00; }
+.hidden { display: none !important; }
+#toast {
+    position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,170,255,.95); color: #fff;
+    padding: 10px 20px; border-radius: 20px;
+    font-weight: bold; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none; z-index: 1000; font-size: 13px;
+}
+#toast.show { opacity: 1; }
+.autonomous-indicator {
+    text-align: center; font-size: 11px; color: #ffaa00;
+    padding: 4px; opacity: 0; transition: opacity 0.3s;
+}
+.autonomous-indicator.active { opacity: 1; }
+.progress-bar {
+    width: 100%; height: 4px; background: rgba(0,220,255,.1);
+    border-radius: 2px; margin: 8px 0; overflow: hidden;
+}
+.progress-bar .fill {
+    height: 100%; background: #00eaff;
+    border-radius: 2px; transition: width 0.3s;
+}
+textarea, input[type="text"] {
+    width: 100%; padding: 10px; margin: 6px 0;
+    border-radius: 10px; border: 1px solid rgba(0,220,255,.3);
+    background: rgba(0,170,255,.08); color: #d8f7ff; font-size: 13px;
+}
+textarea { min-height: 80px; resize: vertical; }
+.cycle-timer {
+    text-align: center; font-size: 11px; color: #00eaff;
+    margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>◇ VOLTANN ◇</h1>
+    <p>AUTONOMOUS KNOWLEDGE CORE v2.6</p>
+</div>
+
+<div class="core" id="coreVisual">
+    <div>
+        <h2 id="state">STANDBY</h2>
+        <p style="font-size:11px;opacity:0.7;">BUDE CEO v26</p>
+    </div>
+</div>
+
+<div class="autonomous-indicator" id="autoIndicator">🤖 AUTONOMOUS LOOP ACTIVE</div>
+
+<div class="status" id="creatorStatus">CREATOR LINK ACTIVE</div>
+
+<!-- TAB: CORE -->
+<div class="tab-content" id="tab-core">
+    <div class="panel">
+        <h2>Creator Control</h2>
+        <button onclick="activateVoltann()">⚡ ACTIVATE VOLTANN</button>
+        <button onclick="pauseVoltann()">⏸ PAUSE SYSTEM</button>
+        <button class="danger" onclick="emergencyStop()">🛑 EMERGENCY STOP</button>
+    </div>
+    
+    <div class="panel">
+        <h2>Operating Mode</h2>
+        <button onclick="setMode('manual')">👤 Manual</button>
+        <button onclick="setMode('assisted')">🤝 Assisted</button>
+        <button onclick="setMode('autonomous_bounded')">🤖 Autonomous Bounded</button>
+        <p id="mode" style="text-align:center;margin-top:10px;font-weight:bold;">Mode: Manual</p>
+    </div>
+    
+    <div class="panel">
+        <h2>Live System Status</h2>
+        <div class="stat"><span>System</span><span id="systemStatus">Standby</span></div>
+        <div class="stat"><span>Mission</span><span id="missionStatus">None</span></div>
+        <div class="stat"><span>Current Cycle</span><span id="cycleStatus">None</span></div>
+        <div class="stat"><span>Next Auto-Cycle</span><span id="nextCycle">—</span></div>
+        <div class="progress-bar"><div class="fill" id="cycleProgress" style="width:0%"></div></div>
+        <div class="cycle-timer" id="cycleTimer">Autonomous cycle every 30s</div>
+    </div>
+</div>
+
+<!-- TAB: MISSIONS -->
+<div class="tab-content hidden" id="tab-missions">
+    <div class="panel">
+        <h2>Mission Console</h2>
+        <input type="text" id="missionInput" placeholder="Enter mission name...">
+        <textarea id="missionDesc" placeholder="Mission description (optional)..."></textarea>
+        <button onclick="newMission()">🚀 CREATE MISSION</button>
+        <button class="secondary" onclick="runNextMission()">▶ RUN NEXT MISSION</button>
+        <p id="missionCreated" style="font-size:12px;opacity:0.7;">No missions created</p>
+    </div>
+    
+    <div class="panel">
+        <h2>Active Missions <span id="missionCount" style="float:right;color:#00eaff;">0</span></h2>
+        <div id="missionList"></div>
+    </div>
+</div>
+
+<!-- TAB: MEMORY -->
+<div class="tab-content hidden" id="tab-memory">
+    <div class="panel">
+        <h2>Memory Crystal</h2>
+        <div class="crystal">◇</div>
+        <div class="stat"><span>Missions</span><span id="missions">0</span></div>
+        <div class="stat"><span>Completed</span><span id="completed">0</span></div>
+        <div class="stat"><span>Logs</span><span id="logs">0</span></div>
+        <div class="stat"><span>Uptime</span><span id="uptime">0s</span></div>
+        <div class="stat"><span>Auto-Cycles</span><span id="autoCycles">0</span></div>
+    </div>
+    
+    <div class="panel">
+        <h2>System Logs</h2>
+        <div id="logList" style="max-height:250px;overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- TAB: OUTPUT -->
+<div class="tab-content hidden" id="tab-output">
+    <div class="panel">
+        <h2>Generated Files</h2>
+        <p style="font-size:12px;opacity:0.7;">Files created by autonomous cycles</p>
+        <div id="fileList"></div>
+    </div>
+    
+    <div class="panel">
+        <h2>GitHub Export</h2>
+        <p style="font-size:12px;opacity:0.7;">Copy this JSON to push to your repo</p>
+        <textarea id="githubExport" readonly style="font-size:10px;min-height:120px;"></textarea>
+        <button onclick="copyExport()">📋 COPY TO CLIPBOARD</button>
+        <button class="secondary" onclick="downloadExport()">💾 DOWNLOAD JSON</button>
+    </div>
+</div>
+
+<!-- TAB: SETTINGS -->
+<div class="tab-content hidden" id="tab-settings">
+    <div class="panel">
+        <h2>Autonomous Configuration</h2>
+        <div class="stat"><span>Cycle Interval</span><span>30 seconds</span></div>
+        <div class="stat"><span>Max Missions/Cycle</span><span>3</span></div>
+        <div class="stat"><span>Safety Level</span><span>Bounded</span></div>
+        <div class="stat"><span>Auto-Generate</span><span id="autoGenStatus">Off</span></div>
+    </div>
+    
+    <div class="panel">
+        <h2>Data Management</h2>
+        <button onclick="exportData()">📤 EXPORT ALL DATA</button>
+        <button class="secondary" onclick="downloadExport()">📄 DOWNLOAD STATUS.JSON</button>
+        <button class="danger" onclick="clearData()">🗑 CLEAR ALL DATA</button>
+    </div>
+    
+    <div class="panel">
+        <h2>System Info</h2>
+        <p style="font-size:12px;line-height:1.8;">
+        🧠 Core Memory — Online<br>
+        ⚙ Workflow Engine — Online<br>
+        🔬 Research Framework — Online<br>
+        🛡 Safety Core — Online<br>
+        🤖 Autonomous Loop — <span id="loopStatus">Offline</span>
+        </p>
+    </div>
+</div>
+
+<div class="nav">
+    <button onclick="showTab('core')" class="active" id="nav-core">Core</button>
+    <button onclick="showTab('missions')" id="nav-missions">Missions</button>
+    <button onclick="showTab('memory')" id="nav-memory">Memory</button>
+    <button onclick="showTab('output')" id="nav-output">Output</button>
+    <button onclick="showTab('settings')" id="nav-settings">Settings</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// VOLTANN AUTONOMOUS CORE ENGINE v2.6
+// ═══════════════════════════════════════════════════════════════
+
+const CONFIG = {
+    CYCLE_INTERVAL: 30000,      // 30 seconds between auto-cycles
+    MAX_MISSIONS_PER_CYCLE: 3,   // Safety bound
+    AUTO_GENERATE: true,         // Create missions autonomously
+    MISSION_TEMPLATES: [
+        "Analyze system performance",
+        "Review pending tasks",
+        "Generate status report",
+        "Optimize workflow patterns",
+        "Check safety boundaries",
+        "Update knowledge base",
+        "Scan for opportunities",
+        "Validate mission queue"
+    ]
+};
+
+const Voltann = {
+    mode: 'manual',
+    active: false,
+    startTime: null,
+    autoCycleCount: 0,
+    currentMission: null,
+    memory: {
+        missions: [],
+        logs: [],
+        files: [],
+        completed: 0
+    },
+    
+    // ─── Lifecycle ───
+    activate() {
+        this.active = true;
+        this.startTime = this.startTime || Date.now();
+        this.log('⚡ Voltann activated');
+        this.save();
+        this.startAutonomousLoop();
+    },
+    
+    pause() {
+        this.active = false;
+        this.log('⏸ Voltann paused');
+        this.stopAutonomousLoop();
+        this.save();
+    },
+    
+    emergencyStop() {
+        this.active = false;
+        this.mode = 'manual';
+        this.stopAutonomousLoop();
+        this.log('🛑 EMERGENCY STOP triggered');
+        this.save();
+    },
+    
+    // ─── Mode ───
+    setMode(mode) {
+        const valid = ['manual', 'assisted', 'autonomous_bounded'];
+        if (!valid.includes(mode)) return;
+        
+        this.mode = mode;
+        this.log(`🎛 Mode set to: ${mode}`);
+        
+        if (mode === 'autonomous_bounded' && this.active) {
+            this.startAutonomousLoop();
+        } else if (mode === 'manual') {
+            this.stopAutonomousLoop();
+        }
+        this.save();
+    },
+    
+    // ─── Missions ───
+    createMission(name, desc = '', source = 'creator') {
+        const mission = {
+            id: Date.now() + Math.random(),
+            name: name || 'Unnamed Mission',
+            description: desc,
+            status: 'pending',
+            source: source,  // 'creator' | 'autonomous'
+            created: new Date().toLocaleString(),
+            started: null,
+            completed: null
+        };
+        this.memory.missions.push(mission);
+        this.log(`🚀 Mission created [${source}]: ${name}`);
+        this.save();
+        return mission;
+    },
+    
+    runMission(missionId) {
+        const mission = this.memory.missions.find(m => m.id === missionId);
+        if (!mission || mission.status !== 'pending') return null;
+        
+        mission.status = 'running';
+        mission.started = new Date().toLocaleString();
+        this.currentMission = mission;
+        this.log(`▶ Mission running: ${mission.name}`);
+        
+        // Simulate mission execution (async)
+        setTimeout(() => {
+            this.completeMission(missionId);
+        }, 2000 + Math.random() * 3000);
+        
+        this.save();
+        return mission;
+    },
+    
+    completeMission(missionId) {
+        const mission = this.memory.missions.find(m => m.id === missionId);
+        if (!mission) return;
+        
+        mission.status = 'completed';
+        mission.completed = new Date().toLocaleString();
+        this.memory.completed++;
+        this.currentMission = null;
+        this.log(`✓ Mission completed: ${mission.name}`);
+        
+        // Generate output file
+        this.generateFile(mission);
+        
+        this.save();
+        refreshDisplay();
+    },
+    
+    // ─── Autonomous Loop ───
+    autonomousLoop: null,
+    
+    startAutonomousLoop() {
+        if (this.autonomousLoop) return;
+        if (this.mode !== 'autonomous_bounded') return;
+        
+        this.log('🤖 Autonomous loop started');
+        
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            if (!this.autonomousLoop) { clearInterval(progressInterval); return; }
+            progress += 100 / (CONFIG.CYCLE_INTERVAL / 100);
+            document.getElementById('cycleProgress').style.width = Math.min(progress, 100) + '%';
+        }, 100);
+        
+        this.autonomousLoop = setInterval(() => {
+            this.runAutonomousCycle();
+            progress = 0;
+        }, CONFIG.CYCLE_INTERVAL);
+        
+        // Run first cycle immediately
+        setTimeout(() => this.runAutonomousCycle(), 1000);
+    },
+    
+    stopAutonomousLoop() {
+        if (this.autonomousLoop) {
+            clearInterval(this.autonomousLoop);
+            this.autonomousLoop = null;
+            this.log('⏹ Autonomous loop stopped');
+        }
+        document.getElementById('cycleProgress').style.width = '0%';
+    },
+    
+    runAutonomousCycle() {
+        if (!this.active || this.mode !== 'autonomous_bounded') return;
+        
+        this.autoCycleCount++;
+        this.log(`🔄 Autonomous cycle #${this.autoCycleCount}`);
+        
+        // 1. Auto-generate missions if enabled and queue is low
+        if (CONFIG.AUTO_GENERATE && this.memory.missions.filter(m => m.status === 'pending').length < 2) {
+            const template = CONFIG.MISSION_TEMPLATES[
+                Math.floor(Math.random() * CONFIG.MISSION_TEMPLATES.length)
+            ];
+            this.createMission(`${template} #${this.autoCycleCount}`, '', 'autonomous');
+        }
+        
+        // 2. Run pending missions (up to max per cycle)
+        const pending = this.memory.missions.filter(m => m.status === 'pending');
+        const toRun = pending.slice(0, CONFIG.MAX_MISSIONS_PER_CYCLE);
+        
+        toRun.forEach((m, i) => {
+            setTimeout(() => this.runMission(m.id), i * 1500);
+        });
+        
+        // 3. Generate status export
+        this.generateStatusExport();
+        
+        this.save();
+        refreshDisplay();
+    },
+    
+    // ─── File Generation ───
+    generateFile(mission) {
+        const file = {
+            id: 'file_' + Date.now(),
+            name: `mission_${mission.id}_report.json`,
+            type: 'mission_report',
+            created: new Date().toLocaleString(),
+            missionId: mission.id,
+            content: {
+                mission: mission.name,
+                status: 'completed',
+                timestamp: new Date().toISOString(),
+                cycle: this.autoCycleCount,
+                mode: this.mode
+            }
+        };
+        this.memory.files.push(file);
+        this.log(`📄 File generated: ${file.name}`);
+    },
+    
+    generateStatusExport() {
+        const exportData = {
+            system: this.active ? 'Online' : 'Offline',
+            mode: this.mode,
+            uptime: this.startTime ? Math.floor((Date.now() - this.startTime) / 1000) : 0,
+            missions_total: this.memory.missions.length,
+            missions_completed: this.memory.completed,
+            missions_pending: this.memory.missions.filter(m => m.status === 'pending').length,
+            auto_cycles: this.autoCycleCount,
+            current_mission: this.currentMission ? this.currentMission.name : 'None',
+            last_cycle: new Date().toISOString(),
+            files_generated: this.memory.files.length,
+            version: '2.6'
+        };
+        
+        // Store for GitHub export
+        this._lastExport = exportData;
+        localStorage.setItem('voltann_status_export', JSON.stringify(exportData, null, 2));
+    },
+    
+    // ─── Persistence ───
+    save() {
+        localStorage.setItem('voltann_data_v26', JSON.stringify({
+            mode: this.mode,
+            active: this.active,
+            startTime: this.startTime,
+            autoCycleCount: this.autoCycleCount,
+            memory: this.memory
+        }));
+    },
+    
+    load() {
+        const saved = localStorage.getItem('voltann_data_v26');
+        if (saved) {
+            const data = JSON.parse(saved);
+            this.mode = data.mode || 'manual';
+            this.active = data.active || false;
+            this.startTime = data.startTime || null;
+            this.autoCycleCount = data.autoCycleCount || 0;
+            this.memory.missions = data.memory?.missions || [];
+            this.memory.logs = data.memory?.logs || [];
+            this.memory.files = data.memory?.files || [];
+            this.memory.completed = data.memory?.completed || 0;
+        }
+    },
+    
+    clear() {
+        this.stopAutonomousLoop();
+        this.mode = 'manual';
+        this.active = false;
+        this.startTime = null;
+        this.autoCycleCount = 0;
+        this.currentMission = null;
+        this.memory = { missions: [], logs: [], files: [], completed: 0 };
+        localStorage.removeItem('voltann_data_v26');
+        localStorage.removeItem('voltann_status_export');
+    },
+    
+    // ─── Logging ───
+    log(message, type = 'info') {
+        const entry = {
+            time: new Date().toLocaleTimeString(),
+            message: message,
+            type: type,
+            auto: this.mode === 'autonomous_bounded'
+        };
+        this.memory.logs.unshift(entry);
+        if (this.memory.logs.length > 100) this.memory.logs.pop();
+        console.log(`[VOLTANN] ${message}`);
+    }
+};
+
+// Load on startup
+Voltann.load();
+
+// ═══════════════════════════════════════════════════════════════
+// UI CONTROLLERS
+// ═══════════════════════════════════════════════════════════════
+
+function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.nav button').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.remove('hidden');
+    document.getElementById('nav-' + tab).classList.add('active');
+    refreshDisplay();
+}
+
+// ─── Actions ───
+function activateVoltann() {
+    Voltann.activate();
+    updateCoreVisual();
+    document.getElementById("creatorStatus").innerHTML = "SYSTEM OPERATIONAL";
+    toast("Voltann Activated!");
+    refreshDisplay();
+}
+
+function pauseVoltann() {
+    Voltann.pause();
+    updateCoreVisual();
+    document.getElementById("creatorStatus").innerHTML = "CREATOR LINK ACTIVE — PAUSED";
+    toast("Voltann Paused");
+    refreshDisplay();
+}
+
+function emergencyStop() {
+    Voltann.emergencyStop();
+    updateCoreVisual();
+    document.getElementById("creatorStatus").innerHTML = "🛑 EMERGENCY STOP — MANUAL MODE";
+    document.getElementById("state").innerHTML = "STOPPED";
+    document.getElementById("state").style.color = "#ff4444";
+    toast("EMERGENCY STOP!");
+    refreshDisplay();
+}
+
+function setMode(mode) {
+    Voltann.setMode(mode);
+    updateCoreVisual();
+    toast("Mode: " + mode.replace('_', ' '));
+    refreshDisplay();
+}
+
+function newMission() {
+    const name = document.getElementById('missionInput').value.trim();
+    const desc = document.getElementById('missionDesc').value.trim();
+    if (!name) { toast("Enter a mission name"); return; }
+    
+    const mission = Voltann.createMission(name, desc, 'creator');
+    document.getElementById('missionInput').value = '';
+    document.getElementById('missionDesc').value = '';
+    document.getElementById("missionCreated").innerHTML = "✓ " + mission.name + " created";
+    toast("Mission Created!");
+    refreshDisplay();
+}
+
+function runNextMission() {
+    const pending = Voltann.memory.missions.filter(m => m.status === 'pending');
+    if (pending.length === 0) { toast("No pending missions"); return; }
+    Voltann.runMission(pending[0].id);
+    toast("Running: " + pending[0].name);
+    refreshDisplay();
+}
+
+// ─── Visual Updates ───
+function updateCoreVisual() {
+    const core = document.getElementById('coreVisual');
+    const state = document.getElementById('state');
+    const indicator = document.getElementById('autoIndicator');
+    
+    core.classList.remove('autonomous', 'running');
+    
+    if (!Voltann.active) {
+        state.innerHTML = "STANDBY";
+        state.style.color = "#d8f7ff";
+        indicator.classList.remove('active');
+    } else if (Voltann.mode === 'autonomous_bounded') {
+        state.innerHTML = "AUTONOMOUS";
+        state.style.color = "#00ff99";
+        core.classList.add('autonomous');
+        indicator.classList.add('active');
+    } else {
+        state.innerHTML = "ACTIVE";
+        state.style.color = "#00eaff";
+        indicator.classList.remove('active');
+    }
+}
+
+// ─── Display ───
+function refreshDisplay() {
+    // Stats
+    document.getElementById("missions").innerHTML = Voltann.memory.missions.length;
+    document.getElementById("completed").innerHTML = Voltann.memory.completed;
+    document.getElementById("logs").innerHTML = Voltann.memory.logs.length;
+    document.getElementById("autoCycles").innerHTML = Voltann.autoCycleCount;
+    document.getElementById("missionCount").innerHTML = Voltann.memory.missions.filter(m => m.status === 'pending').length;
+    
+    // Mode
+    document.getElementById("mode").innerHTML = "Mode: " + Voltann.mode.replace('_', ' ');
+    
+    // Status
+    document.getElementById("systemStatus").innerHTML = Voltann.active ? "Online" : "Standby";
+    document.getElementById("missionStatus").innerHTML = Voltann.currentMission ? Voltann.currentMission.name : "None";
+    document.getElementById("cycleStatus").innerHTML = Voltann.autoCycleCount > 0 ? `Cycle #${Voltann.autoCycleCount}` : "None";
+    document.getElementById("loopStatus").innerHTML = Voltann.autonomousLoop ? "Running" : "Offline";
+    document.getElementById("autoGenStatus").innerHTML = CONFIG.AUTO_GENERATE ? "On" : "Off";
+    
+    // Next cycle countdown
+    if (Voltann.autonomousLoop && Voltann.active) {
+        document.getElementById("nextCycle").innerHTML = "30s interval";
+    } else {
+        document.getElementById("nextCycle").innerHTML = "—";
+    }
+    
+    // Uptime
+    if (Voltann.startTime) {
+        const elapsed = Math.floor((Date.now() - Voltann.startTime) / 1000);
+        const hrs = Math.floor(elapsed / 3600);
+        const mins = Math.floor((elapsed % 3600) / 60);
+        const secs = elapsed % 60;
+        document.getElementById("uptime").innerHTML = 
+            hrs > 0 ? `${hrs}h ${mins}m ${secs}s` : `${mins}m ${secs}s`;
+    }
+    
+    // Mission list
+    const mList = document.getElementById("missionList");
+    const missions = [...Voltann.memory.missions].reverse();
+    if (missions.length > 0) {
+        mList.innerHTML = missions.map(m => {
+            let cls = '';
+            let badge = m.source === 'autonomous' ? '<span class="badge">AUTO</span>' : '';
+            if (m.status === 'running') cls = 'running';
+            if (m.status === 'completed') cls = 'done';
+            return `<div class="mission-item ${cls}">
+                ${badge}
+                <b>${m.name}</b><br>
+                <span style="opacity:0.7;">${m.status.toUpperCase()}</span> | ${m.created}
+                ${m.description ? '<br><span style="opacity:0.5;font-size:11px;">' + m.description + '</span>' : ''}
+            </div>`;
+        }).join('');
+    } else {
+        mList.innerHTML = '<p style="opacity:0.5;text-align:center;padding:20px;">No missions yet</p>';
+    }
+    
+    // Logs
+    const logList = document.getElementById("logList");
+    if (Voltann.memory.logs.length > 0) {
+        logList.innerHTML = Voltann.memory.logs.map(l => 
+            `<div class="log-entry">
+                <span class="time">${l.time}</span>
+                ${l.auto ? '<span class="auto">[AUTO]</span> ' : ''}
+                ${l.message}
+            </div>`
+        ).join('');
+    } else {
+        logList.innerHTML = '<p style="opacity:0.5;text-align:center;">No logs yet</p>';
+    }
+    
+    // File list
+    const fList = document.getElementById("fileList");
+    if (Voltann.memory.files.length > 0) {
+        fList.innerHTML = Voltann.memory.files.slice().reverse().map(f => 
+            `<div class="mission-item">
+                <b>📄 ${f.name}</b><br>
+                <span style="opacity:0.7;font-size:11px;">${f.created} | ${f.type}</span><br>
+                <span style="opacity:0.5;font-size:10px;">${JSON.stringify(f.content).substring(0, 80)}...</span>
+            </div>`
+        ).join('');
+    } else {
+        fList.innerHTML = '<p style="opacity:0.5;text-align:center;padding:20px;">No files generated yet</p>';
+    }
+    
+    // GitHub export
+    const exportData = Voltann._lastExport || JSON.parse(localStorage.getItem('voltann_status_export') || '{}');
+    document.getElementById("githubExport").value = JSON.stringify(exportData, null, 2);
+}
+
+// ─── Data Management ───
+function exportData() {
+    const data = JSON.stringify(Voltann.memory, null, 2);
+    const blob = new Blob([data], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'voltann_export_' + Date.now() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("Full data exported!");
+}
+
+function downloadExport() {
+    Voltann.generateStatusExport();
+    const data = localStorage.getItem('voltann_status_export') || '{}';
+    const blob = new Blob([data], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'status.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("status.json downloaded!");
+}
+
+function copyExport() {
+    const textarea = document.getElementById('githubExport');
+    textarea.select();
+    document.execCommand('copy');
+    toast("Copied to clipboard!");
+}
+
+function clearData() {
+    if (confirm("⚠️ Clear ALL Voltann data? This cannot be undone.")) {
+        Voltann.clear();
+        updateCoreVisual();
+        document.getElementById("state").innerHTML = "STANDBY";
+        document.getElementById("state").style.color = "#d8f7ff";
+        document.getElementById("creatorStatus").innerHTML = "CREATOR LINK ACTIVE";
+        toast("All data cleared");
+        refreshDisplay();
+    }
+}
+
+// ─── Uptime ticker ───
+setInterval(() => {
+    if (Voltann.active && Voltann.startTime) {
+        const elapsed = Math.floor((Date.now() - Voltann.startTime) / 1000);
+        const hrs = Math.floor(elapsed / 3600);
+        const mins = Math.floor((elapsed % 3600) / 60);
+        const secs = elapsed % 60;
+        document.getElementById("uptime").innerHTML = 
+            hrs > 0 ? `${hrs}h ${mins}m ${secs}s` : `${mins}m ${secs}s`;
+    }
+}, 1000);
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+// Restore state
+if (Voltann.active) {
+    updateCoreVisual();
+    document.getElementById("creatorStatus").innerHTML = "SYSTEM OPERATIONAL";
+    if (Voltann.mode === 'autonomous_bounded') {
+        Voltann.startAutonomousLoop();
+    }
+}
+
+refreshDisplay();
+
+// Service worker (optional)
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+            .then(() => console.log('SW OK'))
+            .catch(() => console.log('SW skipped'));
+    });
+}
+</script>
+
+</body>
+</html>
