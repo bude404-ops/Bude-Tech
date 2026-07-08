@@ -1,0 +1,16 @@
+name: Init Voltann
+
+on:
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    name: Trigger Seed Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Verify Seed Exists
+        run: |
+          test -f .github/workflows/voltann_seed.yml || (echo "Seed file missing" && exit 1)
+          echo "Seed verified. Run 'Voltann Seed Deployment' workflow manually to deploy."
