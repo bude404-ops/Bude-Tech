@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BudE STC Core</title>
+
+
+<style>
+
+body {
+
+    margin:0;
+
+    padding:0;
+
+    background:#080b10;
+
+    color:#e6edf3;
+
+    font-family:Arial, sans-serif;
+
+}
+
+
+header {
+
+    text-align:center;
+
+    padding:20px;
+
+    border-bottom:1px solid #333;
+
+}
+
+
+h1 {
+
+    margin:0;
+
+}
+
+
+.container {
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(280px,1fr));
+
+    gap:15px;
+
+    padding:15px;
+
+}
+
+
+.card {
+
+    background:#111820;
+
+    border:1px solid #334;
+
+    border-radius:12px;
+
+    padding:15px;
+
+}
+
+
+.status {
+
+    color:#5cff8d;
+
+    font-weight:bold;
+
+}
+
+
+button {
+
+    width:100%;
+
+    padding:12px;
+
+    cursor:pointer;
+
+}
+
+
+textarea {
+
+    width:100%;
+
+    height:100px;
+
+    background:#080b10;
+
+    color:white;
+
+}
+
+
+.item {
+
+    padding:6px;
+
+    border-bottom:1px solid #333;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<h1>
+
+BudE STC Core
+
+</h1>
+
+
+<p>
+
+Genesis Knowledge Seed
+
+</p>
+
+
+<div class="status">
+
+● ONLINE
+
+</div>
+
+</header>
+
+
+
+<div class="container">
+
+
+
+<div class="card">
+
+<h2>Core Identity</h2>
+
+<div id="identity">
+
+Loading...
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Prime Directives</h2>
+
+<div id="directives">
+
+Loading...
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Agent Network</h2>
+
+<div id="agents">
+
+Loading...
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Knowledge Core</h2>
+
+<div id="knowledge">
+
+Loading...
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Command Bridge</h2>
+
+
+<textarea id="command"
+
+placeholder="Enter Commander Directive">
+
+</textarea>
+
+
+<br><br>
+
+
+<button onclick="sendCommand()">
+
+Submit Directive
+
+</button>
+
+
+<div id="result">
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Project Forge</h2>
+
+<div id="projects">
+
+Loading...
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Evolution</h2>
+
+<div id="evolution">
+
+Loading...
+
+</div>
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+let core;
+
+
+
+async function initialize(){
+
+
+let response =
+
+await fetch(
+"core.json"
+);
+
+
+core =
+await response.json();
+
+
+
+if(window.STC){
+
+core =
+window.STC.awaken(core);
+
+}
+
+
+
+display();
+
+}
+
+
+
+
+function display(){
+
+
+
+document.getElementById(
+"identity"
+).innerHTML =
+
+`
+
+<b>${core.identity.mission}</b>
+
+<br><br>
+
+${core.identity.classification}
+
+`;
+
+
+
+
+
+let directives = "";
+
+
+core.directives.primary
+.forEach(d=>{
+
+
+directives +=
+
+`
+
+<div class="item">
+
+✓ ${d.name}
+
+<br>
+
+${d.purpose}
+
+</div>
+
+`;
+
+});
+
+
+document.getElementById(
+"directives"
+).innerHTML =
+directives;
+
+
+
+
+
+
+
+let agents="";
+
+
+Object.keys(core.agents)
+.forEach(a=>{
+
+
+agents +=
+
+`
+
+<div class="item">
+
+<b>${a}</b>
+
+<br>
+
+${core.agents[a].role}
+
+<br>
+
+Status:
+${core.agents[a].status}
+
+</div>
+
+`;
+
+});
+
+
+document.getElementById(
+"agents"
+).innerHTML =
+agents;
+
+
+
+
+
+
+
+document.getElementById(
+"knowledge"
+).innerHTML =
+
+`
+
+Knowledge Nodes:
+
+${core.metrics.knowledge_nodes}
+
+<br><br>
+
+Commands:
+
+${core.metrics.commands}
+
+`;
+
+
+
+
+
+
+
+document.getElementById(
+"projects"
+).innerHTML =
+
+core.projects.active.length
+
++
+
+" Active Projects";
+
+
+
+
+
+
+
+document.getElementById(
+"evolution"
+).innerHTML =
+
+core.evolution.current;
+
+
+
+}
+
+
+
+
+
+
+
+function sendCommand(){
+
+
+let command =
+
+document.getElementById(
+"command"
+).value;
+
+
+
+if(!command)
+return;
+
+
+
+let mission = {
+
+
+directive:
+command,
+
+
+time:
+new Date().toISOString()
+
+
+};
+
+
+
+core.command_center.history.push(
+mission
+);
+
+
+
+core.command_center.received++;
+
+
+
+localStorage.setItem(
+
+"BUDE_STC_MEMORY",
+
+JSON.stringify(
+core,
+null,
+2
+
+)
+
+);
+
+
+
+document.getElementById(
+"result"
+).innerHTML =
+
+`
+
+<br>
+
+Directive Received
+
+<br>
+
+<b>${command}</b>
+
+<br><br>
+
+Status:
+
+Queued for Strategium Review
+
+`;
+
+
+
+display();
+
+
+}
+
+
+
+
+initialize();
+
+
+</script>
+
+
+</body>
+
+</html>
